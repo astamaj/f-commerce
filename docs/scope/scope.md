@@ -12,9 +12,9 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 
 | #   | Feature                           | Phase      | Status      |
 | --- | --------------------------------- | ---------- | ----------- |
-| 1   | Stack & architecture              | Foundation | in-progress |
+| 1   | Stack & architecture              | Foundation | done        |
 | 2   | Data model                        | Foundation | in-progress |
-| 3   | Coding standards & tooling        | Foundation | planned     |
+| 3   | Coding standards & tooling        | Foundation | in-progress |
 | 4   | Design system & UI foundation     | Foundation | planned     |
 | 5   | Authentication & tenant isolation | Slice 1    | planned     |
 | 6   | Business profile & onboarding     | Slice 1    | planned     |
@@ -33,10 +33,10 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 
 ## Foundations
 
-### 1. Stack & architecture · in-progress
+### 1. Stack & architecture · done
 
 Decide the full stack (frontend, backend, database) and scaffold a runnable project.
-**Done when:** stack recorded in spec; empty project boots locally with dev build passing.
+**Done when:** the chosen stack is captured in the spec, the repo boots locally, and the workspace smoke tests pass.
 
 - [x] Design it (spec): `/architect stack & architecture`
       Spec [0001](../specs/0001-stack-and-architecture.md)
@@ -44,11 +44,11 @@ Decide the full stack (frontend, backend, database) and scaffold a runnable proj
   - [x] Workspace monorepo and shared contracts scaffolded (AC scaffold acceptance)
   - [x] Frontend and backend runnable with health smoke test (AC frontend and backend startup)
   - [x] Local services, environment examples, lint, tests, builds, and CI added (AC local services and tooling)
-- [ ] Verify it: `/check verify scaffold`
+- [x] Verify it: `/check verify scaffold`
 - [x] Test it: `/test scaffold`
 - [x] Review it (fresh model): `/check review scaffold`
 - [x] Document it: `/document scaffold`
-      Code in `frontend/`, `backend/`, and `packages/contracts/`
+      Spec 0001 · code in `frontend/`, `backend/`, and `packages/contracts/`
 
 ### 2. Data model · in-progress
 
@@ -61,12 +61,14 @@ Core entities: users, businesses, customers, products, categories, orders, order
 - [ ] Verify it: `/check verify data model`
 - [ ] Test it: `/test data model`
 
-### 3. Coding standards & tooling
+### 3. Coding standards & tooling · in-progress
 
-Lint, format, type checking, and pre-commit enforcement from real scaffolded project.
-**Done when:** root `AGENTS.md` reflects real stack; lint/format typecheck run clean.
+Lint, format, type checking, and project guardrails from the real scaffolded monorepo.
+**Done when:** workspace conventions and automation reflect the project accurately, and the enforcement checks run clean on the main branch.
 
-- [ ] Setup tooling: `/develop tooling`
+- [x] Setup tooling: `/develop tooling`
+- [ ] Finish workspace checks and review follow-ups: `/check verify tooling`
+      Root `AGENTS.md`, workspace scripts, and repo-level tooling are in place; startup validation and CI follow-up still need final pass.
 
 ### 4. Design system & UI foundation · needs a decision
 
@@ -180,6 +182,12 @@ Printable invoice with business info, customer info, items, totals, payment meth
 **Done when:** user can print invoice or save as PDF via browser print.
 
 - [ ] Design it (spec): `/architect invoices`
+
+## /scope replan · F-Commerce Order Manager
+
+**3 features are on the active scope (1 done, 2 active, 0 deferred), build approach Tracer Bullet, workflow GA.**
+Next: `/clear`, then `/architect design system & UI foundation`
+Heads up: the scaffolded foundation is real and verified, but the remaining work is still the product decision layer: UI system, auth, onboarding, and the data model build path. Scope written to `docs/scope/scope.md`.
 
 ## Legend
 
