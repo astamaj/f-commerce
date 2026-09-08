@@ -5,7 +5,7 @@
 - **Language and runtime**: TypeScript, Node.js
 - **Framework**: Next.js app router, Express
 - **Key dependencies**: MongoDB with Mongoose, JWT authentication, BullMQ with Redis, Cloudinary
-- **Package manager**: Not set yet
+- **Package manager**: npm 10 with npm workspaces
 
 ## Build approach
 
@@ -13,7 +13,24 @@ Tracer Bullet, build each feature as a thin complete path through the database, 
 
 ## Commands
 
-The project scaffold is not created yet. Add install, development, build, and test commands when `/develop tooling` creates the frontend and backend projects.
+```bash
+# Install
+npm ci
+
+# Dev servers
+npm run dev
+
+# Build
+npm run build
+
+# Test
+npm run test
+
+# Quality checks
+npm run lint
+npm run typecheck
+npm run format:check
+```
 
 ## Specs
 
@@ -63,5 +80,9 @@ MCP servers: `mongodb-js/mongodb-mcp-server` (recommended), `https://mcp.vercel.
 ## Context files
 
 <!-- Nested AGENTS.md files are listed here as they are created -->
+
+- [backend/AGENTS.md](backend/AGENTS.md) (Express API workspace conventions and commands)
+- [frontend/AGENTS.md](frontend/AGENTS.md) (Next.js generated guidance)
+- [packages/contracts/AGENTS.md](packages/contracts/AGENTS.md) (shared DTO and schema boundary)
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._

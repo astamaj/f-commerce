@@ -40,14 +40,14 @@ Decide the full stack (frontend, backend, database) and scaffold a runnable proj
 
 - [x] Design it (spec): `/architect stack & architecture`
       Spec [0001](../specs/0001-stack-and-architecture.md)
-- [ ] Build it: `/develop scaffold`
+- [x] Build it: `/develop scaffold`
   - [x] Workspace monorepo and shared contracts scaffolded (AC scaffold acceptance)
   - [x] Frontend and backend runnable with health smoke test (AC frontend and backend startup)
   - [x] Local services, environment examples, lint, tests, builds, and CI added (AC local services and tooling)
 - [ ] Verify it: `/check verify scaffold`
 - [x] Test it: `/test scaffold`
-- [ ] Review it (fresh model): `/check review scaffold`
-- [ ] Document it: `/document scaffold`
+- [x] Review it (fresh model): `/check review scaffold`
+- [x] Document it: `/document scaffold`
       Code in `frontend/`, `backend/`, and `packages/contracts/`
 
 ### 2. Data model · in-progress
