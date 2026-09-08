@@ -45,7 +45,7 @@ Decide the full stack (frontend, backend, database) and scaffold a runnable proj
   - [x] Frontend and backend runnable with health smoke test (AC frontend and backend startup)
   - [x] Local services, environment examples, lint, tests, builds, and CI added (AC local services and tooling)
 - [ ] Verify it: `/check verify scaffold`
-- [ ] Test it: `/test scaffold`
+- [x] Test it: `/test scaffold`
 - [ ] Review it (fresh model): `/check review scaffold`
 - [ ] Document it: `/document scaffold`
       Code in `frontend/`, `backend/`, and `packages/contracts/`

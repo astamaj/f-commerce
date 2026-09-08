@@ -11,4 +11,14 @@ describe('contracts scaffold', () => {
       }),
     ).toMatchObject({ success: true });
   });
+
+  it('rejects a health response with the wrong status', () => {
+    expect(() =>
+      healthResponseSchema.parse({
+        success: true,
+        data: { status: 'down' },
+        message: 'Backend is healthy',
+      }),
+    ).toThrow();
+  });
 });
