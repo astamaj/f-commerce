@@ -7,3 +7,29 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Overview
+
+The Next.js UI runs on port 3000 and uses server components by default. It imports only from `@f-commerce/contracts`.
+
+## Commands
+
+```bash
+npm run dev        # start dev server (frontend on 3000, backend on 4000)
+npm run build      # next build
+npm run lint       # ESLint over the whole workspace
+npm run test       # Vitest unit plus Playwright e2e
+```
+
+## Conventions
+
+- Keep components pure; avoid imperative DOM calls.
+- Use named exports only; no `any` types.
+- Prefer server components for data fetching; stream data to the client.
+- Design system: build all UI to `design.md` (art direction and the maximalist product bar); token values live in CSS.
+
+## Gotchas
+
+- The dev server defaults to port 3000 for Next and port 4000 for the Express backend.
+- Do not edit `package-lock.json` directly; run `npm ci` to sync the monorepo lockfile.
+- Run the e2e suite from the frontend workspace after installing Playwright browsers.

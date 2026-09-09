@@ -65,6 +65,7 @@ Stored in `docs/specs/`. Format: `docs/specs/NNNN-title.md`.
 
 ## Agent skills
 
+- [lucide-icons](.agents/skills/lucide-icons/): `aksuharun/skills`, Lucide icons across frontend frameworks.
 - [vercel-composition-patterns](.agents/skills/vercel-composition-patterns/): `vercel-labs/agent-skills`, React composition patterns.
 - [deploy-to-vercel](.agents/skills/deploy-to-vercel/): `vercel-labs/agent-skills`, Vercel deployment workflows.
 - [vercel-react-best-practices](.agents/skills/vercel-react-best-practices/): `vercel-labs/agent-skills`, React and Next.js practices.
