@@ -35,5 +35,6 @@ npm run test --workspace @f-commerce/backend
 
 - The backend development server uses port 4000 by default.
 - The scaffold does not connect to MongoDB or Redis yet.
+- The server must validate the required backend environment variables from docs/specs/0001-stack-and-architecture.md before listening; currently only PORT is read.
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite._
