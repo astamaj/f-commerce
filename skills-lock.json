@@ -43,6 +43,12 @@
       "skillPath": "skills/document/SKILL.md",
       "computedHash": "a47c5d29a1263d987c2fa05dbc993a5276aaf6c4ddc54fbd329463a5f3a1aa77"
     },
+    "lucide-icons": {
+      "source": "aksuharun/skills",
+      "sourceType": "github",
+      "skillPath": "lucide-icons/SKILL.md",
+      "computedHash": "73228ea1c3b27bde65735896ea53c7de8c1ed1f25838429bbca64415c0b6c257"
+    },
     "scope": {
       "source": "jsmastery-pro/skills",
       "sourceType": "github",
@@ -54,6 +60,12 @@
       "sourceType": "github",
       "skillPath": "skills/sync/SKILL.md",
       "computedHash": "5986c38a23bbb14f82c018862ff0a601f3f20b4a8a1f429e9731b4da6742a765"
+    },
+    "tailwindcss": {
+      "source": "hairyf/skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss/SKILL.md",
+      "computedHash": "78937e1d72496af3e902292eb66b8ad2cdd2d34b90b5428257aae9056678d465"
     },
     "test": {
       "source": "jsmastery-pro/skills",

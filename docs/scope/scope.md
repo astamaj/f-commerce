@@ -15,7 +15,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 1   | Stack & architecture              | Foundation | done        |
 | 2   | Data model                        | Foundation | in-progress |
 | 3   | Coding standards & tooling        | Foundation | in-progress |
-| 4   | Design system & UI foundation     | Foundation | planned     |
+| 4   | Design system & UI foundation     | Foundation | in-progress |
 | 5   | Authentication & tenant isolation | Slice 1    | planned     |
 | 6   | Business profile & onboarding     | Slice 1    | planned     |
 | 7   | Customers                         | Slice 1    | planned     |
@@ -70,12 +70,19 @@ Lint, format, type checking, and project guardrails from the real scaffolded mon
 - [ ] Finish workspace checks and review follow-ups: `/check verify tooling`
       Root `AGENTS.md`, workspace scripts, and repo-level tooling are in place; startup validation and CI follow-up still need final pass.
 
-### 4. Design system & UI foundation · needs a decision
+### 4. Design system & UI foundation
 
 Typography, colors, spacing, and base components for mobile-first SaaS UI.
 **Done when:** `design.md` defines the language; base components are accessible and keyboard friendly.
 
-- [ ] Design it (spec): `/architect design system & UI foundation`
+- [x] Design it (spec): `/architect design system & UI foundation`
+      Spec [0001](../specs/frontend/0001-design-system-ui-foundation.md)
+- [x] Build it: `/develop design system & UI foundation` - [x] Tailwind tokens, fonts, themes, and `design.md` (AC-1) - [x] Responsive seller shell and theme boundary (AC-2) - [x] Accessible primitives and shared async states (AC-3, AC-4) - [x] Replace scaffold page and add primitive tests (AC-5)
+      Code in `frontend/`
+- [ ] Verify it: `/check verify design system & UI foundation`
+- [x] Test it: `/test design system & UI foundation`
+- [x] Review it (fresh model): `/check review design system & UI foundation`
+- [x] Document it: `/document design system & UI foundation`
 
 ## Slice 1: Core Order Management
 
@@ -185,9 +192,9 @@ Printable invoice with business info, customer info, items, totals, payment meth
 
 ## /scope replan · F-Commerce Order Manager
 
-**3 features are on the active scope (1 done, 2 active, 0 deferred), build approach Tracer Bullet, workflow GA.**
-Next: `/clear`, then `/architect design system & UI foundation`
-Heads up: the scaffolded foundation is real and verified, but the remaining work is still the product decision layer: UI system, auth, onboarding, and the data model build path. Scope written to `docs/scope/scope.md`.
+**3 foundation features are in the current pass (1 done, 2 in progress, 0 deferred), build approach Tracer Bullet, workflow GA.**
+Next: `/develop data model`, then `/check verify tooling`, then `/architect design system & UI foundation`
+Heads up: the backend scaffold smoke test currently times out while waiting for the startup message. Frontend and contracts tests pass. The remaining product work includes the UI system, auth, onboarding, and the data model build path. Scope written to `docs/scope/scope.md`.
 
 ## Legend
 
