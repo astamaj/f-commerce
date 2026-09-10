@@ -56,11 +56,11 @@ createIcons({
   attrs: {
     class: ['my-icon'],
     'stroke-width': 1,
-    stroke: '#333'
+    stroke: '#333',
   },
   nameAttr: 'data-lucide', // attribute holding icon name
-  root: shadowRootElement,  // custom DOM root (e.g., shadow DOM)
-  inTemplates: true         // also replace icons inside <template> tags
+  root: shadowRootElement, // custom DOM root (e.g., shadow DOM)
+  inTemplates: true, // also replace icons inside <template> tags
 });
 ```
 
@@ -74,7 +74,7 @@ import { createElement, Menu } from 'lucide';
 const menuIcon = createElement(Menu, {
   class: ['my-icon'],
   'stroke-width': 1,
-  stroke: '#333'
+  stroke: '#333',
 }); // Returns HTMLElement (svg)
 
 document.getElementById('app').appendChild(menuIcon);
@@ -93,5 +93,7 @@ createIcons({ icons: { coconut } });
 
 ```html
 <i data-lucide="house" aria-label="Home icon"></i>
-<script>lucide.createIcons();</script>
+<script>
+  lucide.createIcons();
+</script>
 ```

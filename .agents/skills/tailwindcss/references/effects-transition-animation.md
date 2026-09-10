@@ -54,7 +54,9 @@ Built-in: `animate-spin`, `animate-ping`, `animate-pulse`, `animate-bounce`. Use
 ### Reduced motion
 
 ```html
-<button class="transition hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+<button
+  class="transition hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+>
   Respects prefers-reduced-motion
 </button>
 <div class="animate-spin motion-reduce:animate-none">Spinner hidden when reduced motion</div>

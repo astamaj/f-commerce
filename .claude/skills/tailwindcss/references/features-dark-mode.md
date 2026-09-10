@@ -12,9 +12,7 @@ Tailwind includes a `dark` variant that lets you style your site differently whe
 Use the `dark:` variant to apply styles in dark mode:
 
 ```html
-<div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-  Content
-</div>
+<div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Content</div>
 ```
 
 ## Default Behavior
@@ -34,7 +32,7 @@ By default, the `dark` variant uses the `prefers-color-scheme` CSS media feature
 Override the `dark` variant to use a class selector:
 
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @custom-variant dark (&:where(.dark, .dark *));
 ```
@@ -54,7 +52,7 @@ Now dark mode utilities apply when the `dark` class is present:
 Use a data attribute instead:
 
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 ```
@@ -74,25 +72,24 @@ Support light mode, dark mode, and system preference:
 ```js
 // On page load
 document.documentElement.classList.toggle(
-  "dark",
-  localStorage.theme === "dark" ||
-    (!("theme" in localStorage) && 
-     window.matchMedia("(prefers-color-scheme: dark)").matches)
+  'dark',
+  localStorage.theme === 'dark' ||
+    (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
 );
 
 // Set light mode
-localStorage.theme = "light";
-document.documentElement.classList.remove("dark");
+localStorage.theme = 'light';
+document.documentElement.classList.remove('dark');
 
 // Set dark mode
-localStorage.theme = "dark";
-document.documentElement.classList.add("dark");
+localStorage.theme = 'dark';
+document.documentElement.classList.add('dark');
 
 // Respect system preference
-localStorage.removeItem("theme");
+localStorage.removeItem('theme');
 document.documentElement.classList.toggle(
-  "dark",
-  window.matchMedia("(prefers-color-scheme: dark)").matches
+  'dark',
+  window.matchMedia('(prefers-color-scheme: dark)').matches,
 );
 ```
 
@@ -110,9 +107,7 @@ document.documentElement.classList.toggle(
 ### Borders
 
 ```html
-<div class="border border-gray-200 dark:border-gray-700">
-  Content
-</div>
+<div class="border border-gray-200 dark:border-gray-700">Content</div>
 ```
 
 ### Buttons

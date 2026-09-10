@@ -30,12 +30,12 @@ For faster builds, import from the icons directory:
 
 ## Props
 
-| name                  | type      | default      |
-| --------------------- | --------- | ------------ |
-| `size`                | number    | 24           |
-| `color`               | string    | currentColor |
-| `strokeWidth`         | number    | 2            |
-| `absoluteStrokeWidth` | boolean   | false        |
+| name                  | type    | default      |
+| --------------------- | ------- | ------------ |
+| `size`                | number  | 24           |
+| `color`               | string  | currentColor |
+| `strokeWidth`         | number  | 2            |
+| `absoluteStrokeWidth` | boolean | false        |
 
 Also accepts all SVG presentation attributes as props.
 

@@ -15,17 +15,17 @@ npm install tailwindcss @tailwindcss/vite
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from 'vite';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [tailwindcss()],
-})
+});
 ```
 
 ```css
 /* style.css */
-@import "tailwindcss";
+@import 'tailwindcss';
 ```
 
 ## PostCSS
@@ -40,11 +40,11 @@ export default {
   plugins: {
     '@tailwindcss/postcss': {},
   },
-}
+};
 ```
 
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 ```
 
 ## Tailwind CLI
@@ -55,7 +55,7 @@ npx @tailwindcss/cli -i ./src/input.css -o ./dist/output.css --watch
 
 ```css
 /* input.css */
-@import "tailwindcss";
+@import 'tailwindcss';
 ```
 
 ## Play CDN (Development only)

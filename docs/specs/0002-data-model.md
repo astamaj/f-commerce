@@ -20,11 +20,13 @@ The consequence of poor data modeling includes data leakage between businesses (
 Order schema includes an `items` array with embedded product references and pricing snapshots.
 
 **Pros**:
+
 - Single document for each order
 - Simpler reads for order history
 - Native MongoDB structure
 
 **Cons**:
+
 - Cannot query items independently
 - Harder to evolve schema
 - Potential document size limits
@@ -34,12 +36,14 @@ Order schema includes an `items` array with embedded product references and pric
 Separate collections: `Orders`, `OrderItems`, `Products`, `Customers`, `InventoryTransactions`, `Payments`, `Expenses`, `Categories`, `Couriers`, `AuditLogs`.
 
 **Pros**:
+
 - Flexible querying and indexing
 - Easier schema evolution
 - Standard document model
 - Better tenant isolation enforcement
 
 **Cons**:
+
 - More complex queries
 - Need to manage relationships
 - Higher operational overhead
@@ -49,11 +53,13 @@ Separate collections: `Orders`, `OrderItems`, `Products`, `Customers`, `Inventor
 Main collections for writes, denormalized collections for fast reads.
 
 **Pros**:
+
 - Optimized query performance
 - Built-in audit trails
 - Caching friendly
 
 **Cons**:
+
 - Write amplification
 - Consistency complexity
 - Operational overhead
@@ -63,11 +69,13 @@ Main collections for writes, denormalized collections for fast reads.
 Separate services for different domains.
 
 **Pros**:
+
 - Clear boundaries
 - Scalable
 - Team autonomy
 
 **Cons**:
+
 - Overkill for MVP
 - Distributed systems complexity
 - Requires more infrastructure
@@ -102,18 +110,19 @@ The tradeoff is operational complexity - more collections to manage and query co
 
 ## Proposed stack
 
-| Layer | Choice | Reason |
-|---|---|---|
-| Primary DB | MongoDB + Mongoose | Chosen by stack spec; perfect for flexible schemas and tenant isolation. |
-| Auth | JWT with custom endpoints | Chosen by stack spec; provides fine-grained control for multi-tenant access. |
-| Background jobs | BullMQ + Redis | Chosen by stack spec; handles async operations like order processing and email. |
-| File storage | Cloudinary | Chosen by stack spec; provides scalable image storage for products and business logos. |
-| Hosting | Vercel + Render | Chosen by stack spec; Vercel for frontend, Render for Node.js backend. |
-| Observability | Winston + structured logging | Chosen by stack spec; provides structured logs for debugging. |
+| Layer           | Choice                       | Reason                                                                                 |
+| --------------- | ---------------------------- | -------------------------------------------------------------------------------------- |
+| Primary DB      | MongoDB + Mongoose           | Chosen by stack spec; perfect for flexible schemas and tenant isolation.               |
+| Auth            | JWT with custom endpoints    | Chosen by stack spec; provides fine-grained control for multi-tenant access.           |
+| Background jobs | BullMQ + Redis               | Chosen by stack spec; handles async operations like order processing and email.        |
+| File storage    | Cloudinary                   | Chosen by stack spec; provides scalable image storage for products and business logos. |
+| Hosting         | Vercel + Render              | Chosen by stack spec; Vercel for frontend, Render for Node.js backend.                 |
+| Observability   | Winston + structured logging | Chosen by stack spec; provides structured logs for debugging.                          |
 
 ## Consequences
 
 **Positive**:
+
 - Flexible schema evolution for product catalog growth
 - Accurate financial reporting with price snapshots
 - Strong tenant isolation enforcement
@@ -121,12 +130,14 @@ The tradeoff is operational complexity - more collections to manage and query co
 - Clear separation of concerns for future feature teams
 
 **Negative / tradeoffs**:
+
 - More complex query patterns for multi-collection operations
 - Higher operational overhead (multiple collections to manage)
 - Slower bulk operations compared to embedded documents
 - Need for more careful index strategy
 
 **Neutral**:
+
 - Mongoose validation adds development time but prevents runtime bugs
 - Cloudinary abstracts away file storage complexity
 - JWT auth adds token management overhead
@@ -134,7 +145,7 @@ The tradeoff is operational complexity - more collections to manage and query co
 
 ## Follow-up
 
-- [ ] Confirm Mongoose schema design with `/architect data model` to generate acceptance criteria and build tasks
-- [ ] Set up MongoDB indexing strategy for tenant isolation and common queries
+- [x] Confirm Mongoose schema design with `/architect data model` to generate acceptance criteria and build tasks
+- [x] Set up MongoDB indexing strategy for tenant isolation and common queries
 - [ ] Document the query patterns needed for each feature (reports, dashboards, customer history)
 - [ ] Plan for data migration if existing pilot data needs to be imported into new structure

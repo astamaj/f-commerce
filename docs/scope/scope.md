@@ -13,9 +13,9 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | #   | Feature                           | Phase      | Status      |
 | --- | --------------------------------- | ---------- | ----------- |
 | 1   | Stack & architecture              | Foundation | done        |
-| 2   | Data model                        | Foundation | in-progress |
-| 3   | Coding standards & tooling        | Foundation | in-progress |
-| 4   | Design system & UI foundation     | Foundation | in-progress |
+| 2   | Data model                        | Foundation | done        |
+| 3   | Coding standards & tooling        | Foundation | done        |
+| 4   | Design system & UI foundation     | Foundation | done        |
 | 5   | Authentication & tenant isolation | Slice 1    | planned     |
 | 6   | Business profile & onboarding     | Slice 1    | planned     |
 | 7   | Customers                         | Slice 1    | planned     |
@@ -50,27 +50,29 @@ Decide the full stack (frontend, backend, database) and scaffold a runnable proj
 - [x] Document it: `/document scaffold`
       Spec 0001 · code in `frontend/`, `backend/`, and `packages/contracts/`
 
-### 2. Data model · in-progress
+### 2. Data model · done
 
 Core entities: users, businesses, customers, products, categories, orders, order items, payments, expenses, inventory transactions.
 **Done when:** schema supports full order lifecycle with tenant isolation and historical snapshots.
 
 - [x] Design it (spec): `/architect data model`
-- [ ] Build it: `/develop data model`
-      Spec 0002 · code (filled by /develop)
-- [ ] Verify it: `/check verify data model`
-- [ ] Test it: `/test data model`
+- [x] Build it: `/develop data model`
+      Spec 0002 · code in `backend/src/domain/entities` and `backend/src/infrastructure/database/mongoose/models`
+- [x] Verify it: `/check verify data model`
+- [x] Test it: `/test data model`
+- [x] Review it (fresh model): `/check review data model`
+- [x] Document it: `/document data model`
 
-### 3. Coding standards & tooling · in-progress
+### 3. Coding standards & tooling · done
 
 Lint, format, type checking, and project guardrails from the real scaffolded monorepo.
 **Done when:** workspace conventions and automation reflect the project accurately, and the enforcement checks run clean on the main branch.
 
 - [x] Setup tooling: `/develop tooling`
-- [ ] Finish workspace checks and review follow-ups: `/check verify tooling`
+- [x] Finish workspace checks and review follow-ups: `/check verify tooling`
       Root `AGENTS.md`, workspace scripts, and repo-level tooling are in place; startup validation and CI follow-up still need final pass.
 
-### 4. Design system & UI foundation
+### 4. Design system & UI foundation · done
 
 Typography, colors, spacing, and base components for mobile-first SaaS UI.
 **Done when:** `design.md` defines the language; base components are accessible and keyboard friendly.
@@ -79,7 +81,7 @@ Typography, colors, spacing, and base components for mobile-first SaaS UI.
       Spec [0001](../specs/frontend/0001-design-system-ui-foundation.md)
 - [x] Build it: `/develop design system & UI foundation` - [x] Tailwind tokens, fonts, themes, and `design.md` (AC-1) - [x] Responsive seller shell and theme boundary (AC-2) - [x] Accessible primitives and shared async states (AC-3, AC-4) - [x] Replace scaffold page and add primitive tests (AC-5)
       Code in `frontend/`
-- [ ] Verify it: `/check verify design system & UI foundation`
+- [x] Verify it: `/check verify design system & UI foundation`
 - [x] Test it: `/test design system & UI foundation`
 - [x] Review it (fresh model): `/check review design system & UI foundation`
 - [x] Document it: `/document design system & UI foundation`

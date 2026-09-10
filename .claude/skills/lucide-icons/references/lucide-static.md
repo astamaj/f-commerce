@@ -25,7 +25,9 @@ npm install lucide-static
 ### As CSS Background
 
 ```css
-.house-icon { background-image: url(~lucide-static/icons/house.svg); }
+.house-icon {
+  background-image: url(~lucide-static/icons/house.svg);
+}
 ```
 
 ### As String (for templating)
@@ -41,8 +43,15 @@ import arrowRightIcon from 'lucide-static/icons/arrow-right';
 ## SVG Sprite
 
 ```html
-<svg width="24" height="24" fill="none" stroke="currentColor"
-     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<svg
+  width="24"
+  height="24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
   <use href="#alert-triangle" />
 </svg>
 ```
@@ -51,9 +60,13 @@ CSS helper approach:
 
 ```css
 .lucide-icon {
-  width: 24px; height: 24px;
-  stroke: currentColor; fill: none;
-  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 ```
 

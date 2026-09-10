@@ -20,13 +20,13 @@ import { Camera } from 'lucide-vue-next';
 
 ## Props
 
-| name                  | type      | default      |
-| --------------------- | --------- | ------------ |
-| `size`                | number    | 24           |
-| `color`               | string    | currentColor |
-| `stroke-width`        | number    | 2            |
-| `absoluteStrokeWidth` | boolean   | false        |
-| `default-class`       | string    | lucide-icon  |
+| name                  | type    | default      |
+| --------------------- | ------- | ------------ |
+| `size`                | number  | 24           |
+| `color`               | string  | currentColor |
+| `stroke-width`        | number  | 2            |
+| `absoluteStrokeWidth` | boolean | false        |
+| `default-class`       | string  | lucide-icon  |
 
 Also accepts all SVG presentation attributes as props.
 

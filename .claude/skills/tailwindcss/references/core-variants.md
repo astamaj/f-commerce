@@ -28,12 +28,15 @@ Variants can be stacked to target specific situations:
 ### Interactive States
 
 ```html
-<button class="bg-violet-500 hover:bg-violet-600 focus:outline-2 focus:outline-violet-500 active:bg-violet-700">
+<button
+  class="bg-violet-500 hover:bg-violet-600 focus:outline-2 focus:outline-violet-500 active:bg-violet-700"
+>
   Save changes
 </button>
 ```
 
 Common interactive variants:
+
 - `hover:` - `:hover` pseudo-class
 - `focus:` - `:focus` pseudo-class
 - `active:` - `:active` pseudo-class
@@ -52,6 +55,7 @@ Common interactive variants:
 ```
 
 Common structural variants:
+
 - `first:` - `:first-child`
 - `last:` - `:last-child`
 - `odd:` - `:nth-child(odd)`
@@ -65,6 +69,7 @@ Common structural variants:
 ```
 
 Common form variants:
+
 - `required:` - `:required`
 - `optional:` - `:optional`
 - `invalid:` - `:invalid`
@@ -80,6 +85,7 @@ Common form variants:
 ```
 
 Common pseudo-element variants:
+
 - `before:` - `::before`
 - `after:` - `::after`
 - `placeholder:` - `::placeholder`
@@ -98,9 +104,7 @@ Common pseudo-element variants:
 ### Dark Mode
 
 ```html
-<div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-  Content
-</div>
+<div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Content</div>
 ```
 
 By default uses `prefers-color-scheme`, but can be customized to use a class or data attribute.
@@ -108,9 +112,7 @@ By default uses `prefers-color-scheme`, but can be customized to use a class or 
 ### Reduced Motion
 
 ```html
-<div class="transition-all motion-reduce:transition-none">
-  Animated content
-</div>
+<div class="transition-all motion-reduce:transition-none">Animated content</div>
 ```
 
 ## Attribute Selector Variants

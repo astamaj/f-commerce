@@ -13,12 +13,12 @@ Practical patterns when building with Tailwind utilities.
 
 ```jsx
 function Button({ children, variant = 'primary' }) {
-  const base = 'px-4 py-2 rounded-lg font-medium'
+  const base = 'px-4 py-2 rounded-lg font-medium';
   const variants = {
     primary: 'bg-blue-500 hover:bg-blue-600 text-white',
     secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-900',
-  }
-  return <button className={`${base} ${variants[variant]}`}>{children}</button>
+  };
+  return <button className={`${base} ${variants[variant]}`}>{children}</button>;
 }
 ```
 
@@ -51,7 +51,7 @@ Use sparingly; prefer fixing specificity properly.
 ## Important flag (global)
 
 ```css
-@import "tailwindcss" important;
+@import 'tailwindcss' important;
 ```
 
 Makes all utilities `!important`. Useful when integrating into existing high-specificity CSS.
@@ -59,7 +59,7 @@ Makes all utilities `!important`. Useful when integrating into existing high-spe
 ## Prefix option
 
 ```css
-@import "tailwindcss" prefix(tw);
+@import 'tailwindcss' prefix(tw);
 ```
 
 Generates `tw:text-red-500` etc. Use when project class names conflict with Tailwind.

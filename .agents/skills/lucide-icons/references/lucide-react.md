@@ -11,19 +11,17 @@ npm install lucide-react
 ```jsx
 import { Camera, Home, Settings } from 'lucide-react';
 
-const App = () => (
-  <Camera color="red" size={48} />
-);
+const App = () => <Camera color="red" size={48} />;
 ```
 
 ## Props
 
-| name                  | type      | default      |
-| --------------------- | --------- | ------------ |
-| `size`                | number    | 24           |
-| `color`               | string    | currentColor |
-| `strokeWidth`         | number    | 2            |
-| `absoluteStrokeWidth` | boolean   | false        |
+| name                  | type    | default      |
+| --------------------- | ------- | ------------ |
+| `size`                | number  | 24           |
+| `color`               | string  | currentColor |
+| `strokeWidth`         | number  | 2            |
+| `absoluteStrokeWidth` | boolean | false        |
 
 Also accepts all SVG presentation attributes as props.
 
@@ -34,7 +32,7 @@ For CMS-driven or dynamic icon names:
 ```jsx
 import { DynamicIcon } from 'lucide-react/dynamic';
 
-<DynamicIcon name="camera" color="red" size={48} />
+<DynamicIcon name="camera" color="red" size={48} />;
 ```
 
 ## Custom / Lab Icons
@@ -43,7 +41,7 @@ import { DynamicIcon } from 'lucide-react/dynamic';
 import { Icon } from 'lucide-react';
 import { coconut } from '@lucide/lab';
 
-<Icon iconNode={coconut} />
+<Icon iconNode={coconut} />;
 ```
 
 ## Accessibility

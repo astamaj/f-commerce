@@ -28,12 +28,12 @@ import CircleAlert from '@lucide/astro/icons/circle-alert';
 
 ## Props
 
-| name                  | type      | default      |
-| --------------------- | --------- | ------------ |
-| `size`                | number    | 24           |
-| `color`               | string    | currentColor |
-| `stroke-width`        | number    | 2            |
-| `absoluteStrokeWidth` | boolean   | false        |
+| name                  | type    | default      |
+| --------------------- | ------- | ------------ |
+| `size`                | number  | 24           |
+| `color`               | string  | currentColor |
+| `stroke-width`        | number  | 2            |
+| `absoluteStrokeWidth` | boolean | false        |
 
 Also accepts all SVG presentation attributes as props.
 

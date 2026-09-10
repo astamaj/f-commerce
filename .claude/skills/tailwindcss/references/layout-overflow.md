@@ -25,9 +25,7 @@ Use `overflow-auto`, `overflow-hidden`, `overflow-visible`, `overflow-scroll`:
 Use `overflow-x-*` or `overflow-y-*` for horizontal/vertical control:
 
 ```html
-<div class="overflow-x-auto overflow-y-hidden">
-  Horizontal scroll, vertical clip
-</div>
+<div class="overflow-x-auto overflow-y-hidden">Horizontal scroll, vertical clip</div>
 <div class="overflow-x-scroll overflow-y-auto">
   Horizontal always scrolls, vertical scrolls if needed
 </div>

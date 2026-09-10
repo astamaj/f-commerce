@@ -14,7 +14,7 @@ npm install lucide-angular
 import { LucideAngularModule, File, House, Menu } from 'lucide-angular';
 
 @NgModule({
-  imports: [LucideAngularModule.pick({ File, House, Menu })]
+  imports: [LucideAngularModule.pick({ File, House, Menu })],
 })
 export class AppModule {}
 ```
@@ -50,12 +50,12 @@ export class AppComponent {
 
 ## Props
 
-| name                  | type      | default      |
-| --------------------- | --------- | ------------ |
-| `size`                | number    | 24           |
-| `color`               | string    | currentColor |
-| `strokeWidth`         | number    | 2            |
-| `absoluteStrokeWidth` | boolean   | false        |
+| name                  | type    | default      |
+| --------------------- | ------- | ------------ |
+| `size`                | number  | 24           |
+| `color`               | string  | currentColor |
+| `strokeWidth`         | number  | 2            |
+| `absoluteStrokeWidth` | boolean | false        |
 
 ```html
 <i-lucide name="house" [size]="48" color="red" [strokeWidth]="1"></i-lucide>
@@ -69,7 +69,7 @@ Inject `LucideIconConfig` in root component to set global defaults.
 
 ```ts
 import { icons } from 'lucide-angular';
-LucideAngularModule.pick(icons)
+LucideAngularModule.pick(icons);
 ```
 
 ## Custom / Lab Icons

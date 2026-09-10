@@ -24,12 +24,12 @@ const App = () => <Camera color="red" size={48} />;
 
 ## Props
 
-| name                  | type      | default      |
-| --------------------- | --------- | ------------ |
-| `size`                | number    | 24           |
-| `color`               | string    | currentColor |
-| `strokeWidth`         | number    | 2            |
-| `absoluteStrokeWidth` | boolean   | false        |
+| name                  | type    | default      |
+| --------------------- | ------- | ------------ |
+| `size`                | number  | 24           |
+| `color`               | string  | currentColor |
+| `strokeWidth`         | number  | 2            |
+| `absoluteStrokeWidth` | boolean | false        |
 
 Also accepts all SVG presentation attributes as props.
 
@@ -40,7 +40,9 @@ import { icons, type LucideProps } from 'lucide-solid';
 import { splitProps } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 
-interface IconProps extends LucideProps { name: keyof typeof icons; }
+interface IconProps extends LucideProps {
+  name: keyof typeof icons;
+}
 
 const Icon = (props: IconProps) => {
   const [local, others] = splitProps(props, ['name']);

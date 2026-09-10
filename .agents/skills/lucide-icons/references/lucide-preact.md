@@ -16,12 +16,12 @@ const App = () => <Camera color="red" size={48} />;
 
 ## Props
 
-| name                  | type      | default      |
-| --------------------- | --------- | ------------ |
-| `size`                | number    | 24           |
-| `color`               | string    | currentColor |
-| `strokeWidth`         | number    | 2            |
-| `absoluteStrokeWidth` | boolean   | false        |
+| name                  | type    | default      |
+| --------------------- | ------- | ------------ |
+| `size`                | number  | 24           |
+| `color`               | string  | currentColor |
+| `strokeWidth`         | number  | 2            |
+| `absoluteStrokeWidth` | boolean | false        |
 
 > **Note:** Preact doesn't transform SVG attributes, so use kebab-case for SVG props (e.g., `stroke-linejoin` not `strokeLinejoin`).
 

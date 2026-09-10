@@ -14,9 +14,9 @@ Built on top of modern-normalize, Preflight is automatically injected when you i
 ```css
 @layer theme, base, components, utilities;
 
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/preflight.css" layer(base);
-@import "tailwindcss/utilities.css" layer(utilities);
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css' layer(utilities);
 ```
 
 ## Key Resets
@@ -56,13 +56,19 @@ Since the `border` utility only sets `border-width`, this ensures adding `border
 All headings are unstyled by default:
 
 ```css
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-size: inherit;
   font-weight: inherit;
 }
 ```
 
 **Reasons:**
+
 - Avoids deviating from your type scale
 - In UI development, headings should often be visually de-emphasized
 
@@ -71,7 +77,9 @@ h1, h2, h3, h4, h5, h6 {
 Ordered and unordered lists have no bullets or numbers:
 
 ```css
-ol, ul, menu {
+ol,
+ul,
+menu {
   list-style: none;
 }
 ```
@@ -99,7 +107,14 @@ Style lists using utilities:
 Images and replaced elements are `display: block`:
 
 ```css
-img, svg, video, canvas, audio, iframe, embed, object {
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
   display: block;
   vertical-align: middle;
 }
@@ -116,7 +131,8 @@ Use `inline` utility if needed:
 Images and videos are constrained to parent width:
 
 ```css
-img, video {
+img,
+video {
   max-width: 100%;
   height: auto;
 }
@@ -133,7 +149,7 @@ Override with `max-w-none`:
 Elements with `hidden` attribute stay hidden:
 
 ```css
-[hidden]:where(:not([hidden="until-found"])) {
+[hidden]:where(:not([hidden='until-found'])) {
   display: none !important;
 }
 ```
@@ -148,12 +164,12 @@ Add base styles to the `base` layer:
     font-size: var(--text-2xl);
     font-weight: 600;
   }
-  
+
   h2 {
     font-size: var(--text-xl);
     font-weight: 600;
   }
-  
+
   a {
     color: var(--color-blue-600);
     text-decoration-line: underline;
@@ -168,9 +184,9 @@ Import Tailwind components individually, omitting Preflight:
 ```css
 @layer theme, base, components, utilities;
 
-@import "tailwindcss/theme.css" layer(theme);
+@import 'tailwindcss/theme.css' layer(theme);
 /* @import "tailwindcss/preflight.css" layer(base); */ /* Omitted */
-@import "tailwindcss/utilities.css" layer(utilities);
+@import 'tailwindcss/utilities.css' layer(utilities);
 ```
 
 ## Working Around Third-Party Libraries

@@ -19,12 +19,12 @@ const App = () => <Camera color="red" size={48} />;
 
 ## Props
 
-| name                  | type      | default      |
-| --------------------- | --------- | ------------ |
-| `size`                | number    | 24           |
-| `color`               | string    | currentColor |
-| `strokeWidth`         | number    | 2            |
-| `absoluteStrokeWidth` | boolean   | false        |
+| name                  | type    | default      |
+| --------------------- | ------- | ------------ |
+| `size`                | number  | 24           |
+| `color`               | string  | currentColor |
+| `strokeWidth`         | number  | 2            |
+| `absoluteStrokeWidth` | boolean | false        |
 
 Also accepts all SVG attributes as props.
 
@@ -33,7 +33,11 @@ Also accepts all SVG attributes as props.
 ```tsx
 import * as icons from 'lucide-react-native/icons';
 
-interface IconProps { name: keyof typeof icons; color?: string; size?: number; }
+interface IconProps {
+  name: keyof typeof icons;
+  color?: string;
+  size?: number;
+}
 
 const Icon = ({ name, color, size }: IconProps) => {
   const LucideIcon = icons[name];
