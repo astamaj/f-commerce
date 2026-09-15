@@ -1,9 +1,16 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
+import { config } from './infrastructure/config.js';
+import { connectToDatabase } from './infrastructure/database/mongoose/connection.js';
+import { authRouter } from './presentation/controllers/auth.controller.js';
 
 const app = express();
-const port = Number(process.env.PORT ?? 4000);
+const port = Number(config.PORT);
 
 app.use(express.json());
+app.use(cookieParser());
+
+app.use('/api/auth', authRouter);
 
 app.get('/health', (_request, response) => {
   response.status(200).json({
@@ -13,6 +20,11 @@ app.get('/health', (_request, response) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Backend listening on port ${port}`);
-});
+async function startServer() {
+  await connectToDatabase(config.MONGODB_URI);
+  app.listen(port, () => {
+    console.log(`Backend listening on port ${port}`);
+  });
+}
+
+startServer();

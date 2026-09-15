@@ -16,7 +16,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 2   | Data model                        | Foundation | done        |
 | 3   | Coding standards & tooling        | Foundation | done        |
 | 4   | Design system & UI foundation     | Foundation | done        |
-| 5   | Authentication & tenant isolation | Slice 1    | planned     |
+| 5   | Authentication & tenant isolation | Slice 1    | in-progress |
 | 6   | Business profile & onboarding     | Slice 1    | planned     |
 | 7   | Customers                         | Slice 1    | planned     |
 | 8   | Products & categories             | Slice 2    | planned     |
@@ -88,12 +88,22 @@ Typography, colors, spacing, and base components for mobile-first SaaS UI.
 
 ## Slice 1: Core Order Management
 
-### 5. Authentication & tenant isolation · needs a decision
+### 5. Authentication & tenant isolation · in-progress
 
 User auth, JWT tokens, role management (owner/staff), strict multi-tenant data rules.
 **Done when:** users can register/login; each query enforces businessId isolation; unauthorized access is impossible.
 
-- [ ] Design it (spec): `/architect authentication & tenant isolation`
+- [x] Design it (spec): `/architect authentication & tenant isolation`
+      Spec [0003](../specs/0003-authentication-tenant-isolation/index.md)
+- [x] Build it: `/develop authentication & tenant isolation`
+      Code in `backend/src/`
+  - [x] Auth & Tenant Infrastructure (AC-4)
+  - [x] Core Authentication Flow & Data Models (AC-1, AC-2, AC-3)
+  - [x] OAuth & Role-based Access (AC-1, AC-5, AC-6)
+- [ ] Verify it: `/check verify authentication & tenant isolation`
+- [ ] Test it: `/test authentication & tenant isolation`
+- [ ] Review it (fresh model): `/check review authentication & tenant isolation`
+- [ ] Document it: `/document authentication & tenant isolation`
 
 ### 6. Business profile & onboarding · needs a decision
 

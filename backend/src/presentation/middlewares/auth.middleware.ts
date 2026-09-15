@@ -1,0 +1,64 @@
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { config } from '../../infrastructure/config.js';
+import { runWithContext } from '../../infrastructure/database/mongoose/context.js';
+
+interface JwtPayload {
+  userId: string;
+  memberships: { businessId: string; role: 'OWNER' | 'STAFF' }[];
+}
+
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Missing or invalid authorization header' });
+    return;
+  }
+
+  const token = authHeader.substring(7);
+  try {
+    const decoded = jwt.verify(token, config.JWT_SECRET) as JwtPayload;
+    (req as any).user = decoded;
+    next();
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid or expired token' });
+  }
+}
+
+export function requireBusinessRole(allowedRoles: ('OWNER' | 'STAFF')[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    // The businessId could come from a header, a param, or a query string.
+    // For this design, let's assume it is passed in the headers as 'x-business-id'
+    const businessId = req.headers['x-business-id'] as string;
+    
+    if (!businessId) {
+      res.status(400).json({ error: 'Missing x-business-id header' });
+      return;
+    }
+
+    const user = (req as any).user as JwtPayload;
+    if (!user) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+
+    const membership = user.memberships.find(m => m.businessId === businessId);
+    if (!membership) {
+      res.status(403).json({ error: 'You do not have access to this business' });
+      return;
+    }
+
+    if (!allowedRoles.includes(membership.role)) {
+      res.status(403).json({ error: 'Insufficient permissions' });
+      return;
+    }
+
+    // Set the context for Mongoose tenant plugin
+    runWithContext(
+      { userId: user.userId, businessId, role: membership.role },
+      () => {
+        next();
+      }
+    );
+  };
+}
