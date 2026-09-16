@@ -48,7 +48,7 @@ describe('Tenant Isolation Plugin', () => {
 
   describe('runWithContext', () => {
     it('provides context to nested function', () => {
-      const context = { userId: 'user1', businessId: 'biz1', role: 'OWNER' };
+      const context = { userId: 'user1', businessId: 'biz1', role: 'OWNER' as const };
       const result = runWithContext(context, () => {
         return { tenantId: getTenantId() };
       });
@@ -56,8 +56,8 @@ describe('Tenant Isolation Plugin', () => {
     });
 
     it('restores previous context after function completes', () => {
-      const outerContext = { userId: 'user1', businessId: 'outer-biz', role: 'OWNER' };
-      const innerContext = { userId: 'user2', businessId: 'inner-biz', role: 'STAFF' };
+      const outerContext = { userId: 'user1', businessId: 'outer-biz', role: 'OWNER' as const };
+      const innerContext = { userId: 'user2', businessId: 'inner-biz', role: 'STAFF' as const };
 
       let innerResult: string | undefined;
       let outerAfterResult: string | undefined;

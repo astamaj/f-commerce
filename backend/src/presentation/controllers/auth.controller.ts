@@ -36,7 +36,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
 
 authRouter.post('/oauth/:provider', async (req: Request, res: Response) => {
   try {
-    const { provider } = req.params;
+    const provider = req.params.provider as string;
     const { email, name, providerId } = req.body;
     // In a real implementation, you would verify the OAuth token with Google/Facebook here
     // rather than trusting the client to pass the email and providerId
