@@ -18,9 +18,9 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const token = authHeader.substring(7);
   try {
     const decoded = jwt.verify(token, config.JWT_SECRET) as JwtPayload;
-    (req as any).user = decoded;
+    req.user = decoded;
     next();
-  } catch (error) {
+  } catch {
     res.status(401).json({ error: 'Invalid or expired token' });
   }
 }
@@ -30,19 +30,19 @@ export function requireBusinessRole(allowedRoles: ('OWNER' | 'STAFF')[]) {
     // The businessId could come from a header, a param, or a query string.
     // For this design, let's assume it is passed in the headers as 'x-business-id'
     const businessId = req.headers['x-business-id'] as string;
-    
+
     if (!businessId) {
       res.status(400).json({ error: 'Missing x-business-id header' });
       return;
     }
 
-    const user = (req as any).user as JwtPayload;
+    const user = req.user;
     if (!user) {
       res.status(401).json({ error: 'Authentication required' });
       return;
     }
 
-    const membership = user.memberships.find(m => m.businessId === businessId);
+    const membership = user.memberships.find((m) => m.businessId === businessId);
     if (!membership) {
       res.status(403).json({ error: 'You do not have access to this business' });
       return;
@@ -54,11 +54,8 @@ export function requireBusinessRole(allowedRoles: ('OWNER' | 'STAFF')[]) {
     }
 
     // Set the context for Mongoose tenant plugin
-    runWithContext(
-      { userId: user.userId, businessId, role: membership.role },
-      () => {
-        next();
-      }
-    );
+    runWithContext({ userId: user.userId, businessId, role: membership.role }, () => {
+      next();
+    });
   };
 }

@@ -9,10 +9,12 @@ The F-commerce SaaS platform manages critical business data (orders, inventory, 
 Every database query explicitly includes `{ businessId: currentBusinessId }`.
 
 **Pros**:
+
 - Explicit control in every repository method.
 - No "magic" middleware behavior.
 
 **Cons**:
+
 - Highly error-prone; a developer forgetting the filter causes a massive security breach.
 
 ### Option 2: Global Mongoose plugin with AsyncLocalStorage (chosen)
@@ -20,10 +22,12 @@ Every database query explicitly includes `{ businessId: currentBusinessId }`.
 Node.js `AsyncLocalStorage` stores the current request's `businessId`, and a Mongoose plugin automatically appends it to all queries.
 
 **Pros**:
+
 - Bulletproof isolation; developers cannot accidentally forget to filter.
 - Code remains clean without passing `businessId` manually everywhere.
 
 **Cons**:
+
 - Slightly obscures the query shape (magic behavior).
 - Requires careful handling of cross-tenant or background job queries.
 

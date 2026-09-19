@@ -4,18 +4,18 @@ _Steps derived from spec 0003 acceptance criteria. `/check verify` runs these; `
 
 ## UI / manual
 
-- [ ] Visit POST `/api/auth/register` with valid email, password, name, businessName → Expect 201 and JWT in response, Refresh Token in cookie → AC-1, AC-2
-- [ ] Visit POST `/api/auth/login` with created credentials → Expect 200 and JWT in response, Refresh Token in cookie → AC-1, AC-2
-- [ ] Visit POST `/api/auth/oauth/google` with mock Google payload → Expect 200 and JWT/Refresh Token → AC-1
-- [ ] Visit POST `/api/auth/oauth/google` with existing email → Expect 200 and linked account (no error) → AC-6
-- [ ] Visit POST `/api/auth/refresh` with valid cookie → Expect 200 and new JWT → AC-2
-- [ ] Visit GET `/api/auth/me` with valid JWT in auth header → Expect 200 and user profile + business memberships (OWNER role) → AC-3
-- [ ] Verify database queries automatically isolate data by attempting a find query outside `AsyncLocalStorage` context without `bypassTenantIsolation` → Expect Error thrown → AC-4
-- [ ] Make a request to a protected route with a `STAFF` role token but route requires `OWNER` → Expect 403 Insufficient permissions → AC-5
+- [x] Visit POST `/api/auth/register` with valid email, password, name, businessName → Expect 201 and JWT in response, Refresh Token in cookie → AC-1, AC-2
+- [x] Visit POST `/api/auth/login` with created credentials → Expect 200 and JWT in response, Refresh Token in cookie → AC-1, AC-2
+- [x] Visit POST `/api/auth/oauth/google` with mock Google payload → Expect 200 and JWT/Refresh Token → AC-1
+- [x] Visit POST `/api/auth/oauth/google` with existing email → Expect 200 and linked account (no error) → AC-6
+- [x] Visit POST `/api/auth/refresh` with valid cookie → Expect 200 and new JWT → AC-2
+- [x] Visit GET `/api/auth/me` with valid JWT in auth header → Expect 200 and user profile + business memberships (OWNER role) → AC-3
+- [x] Verify database queries automatically isolate data by attempting a find query outside `AsyncLocalStorage` context without `bypassTenantIsolation` → Expect Error thrown → AC-4
+- [x] Make a request to a protected route with a `STAFF` role token but route requires `OWNER` → Expect 403 Insufficient permissions → AC-5
 
 ## Commands
 
-- [ ] `npm run typecheck --workspace @f-commerce/backend` → Expected to pass (0 errors) → AC-1 to AC-6
+- [x] `npm run typecheck --workspace @f-commerce/backend` → Expected to pass (0 errors) → AC-1 to AC-6
 
 ## Acceptance-criteria coverage
 

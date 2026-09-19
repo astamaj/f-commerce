@@ -30,7 +30,9 @@ describe('Auth Middleware', () => {
 
     it('returns 401 if token is invalid', () => {
       req.headers!.authorization = 'Bearer invalid';
-      vi.mocked(jwt.verify).mockImplementation(() => { throw new Error(); });
+      vi.mocked(jwt.verify).mockImplementation(() => {
+        throw new Error();
+      });
 
       requireAuth(req as Request, res as Response, next);
       expect(res.status).toHaveBeenCalledWith(401);
@@ -38,10 +40,10 @@ describe('Auth Middleware', () => {
 
     it('calls next and sets user if token is valid', () => {
       req.headers!.authorization = 'Bearer valid';
-      vi.mocked(jwt.verify).mockReturnValue({ userId: '123' } as any);
+      vi.mocked(jwt.verify).mockReturnValue({ userId: '123' } as never);
 
       requireAuth(req as Request, res as Response, next);
-      expect((req as any).user).toEqual({ userId: '123' });
+      expect(req.user).toEqual({ userId: '123' });
       expect(next).toHaveBeenCalled();
     });
   });
@@ -55,38 +57,38 @@ describe('Auth Middleware', () => {
 
     it('returns 403 if user lacks access to business', () => {
       req.headers!['x-business-id'] = 'biz1';
-      (req as any).user = { userId: '123', memberships: [{ businessId: 'biz2', role: 'OWNER' }] };
+      req.user = { userId: '123', memberships: [{ businessId: 'biz2', role: 'OWNER' }] };
 
       const middleware = requireBusinessRole(['OWNER']);
       middleware(req as Request, res as Response, next);
       expect(res.status).toHaveBeenCalledWith(403);
     });
 
-    it('sets context and calls next if role matches', () => {
+    it('returns 403 if user role is insufficient', () => {
       req.headers!['x-business-id'] = 'biz1';
-      (req as any).user = { userId: '123', memberships: [{ businessId: 'biz1', role: 'OWNER' }] };
-      vi.mocked(runWithContext).mockImplementation((ctx, fn) => fn());
+      req.user = { userId: '123', memberships: [{ businessId: 'biz1', role: 'STAFF' }] };
+
+      const middleware = requireBusinessRole(['OWNER']);
+      middleware(req as Request, res as Response, next);
+      expect(res.status).toHaveBeenCalledWith(403);
+    });
+
+    it('sets context and calls next on success', () => {
+      req.headers!['x-business-id'] = 'biz1';
+      req.user = { userId: '123', memberships: [{ businessId: 'biz1', role: 'OWNER' }] };
 
       const middleware = requireBusinessRole(['OWNER']);
       middleware(req as Request, res as Response, next);
 
       expect(runWithContext).toHaveBeenCalledWith(
         { userId: '123', businessId: 'biz1', role: 'OWNER' },
-        expect.any(Function)
+        expect.any(Function),
       );
+
+      // Simulate runWithContext callback
+      const callback = vi.mocked(runWithContext).mock.calls[0][1];
+      callback();
       expect(next).toHaveBeenCalled();
-    });
-
-    it('returns 403 when user has insufficient permissions', () => {
-      req.headers!['x-business-id'] = 'biz1';
-      (req as any).user = { userId: '123', memberships: [{ businessId: 'biz1', role: 'STAFF' }] };
-      vi.mocked(runWithContext).mockImplementation((ctx, fn) => fn());
-
-      const middleware = requireBusinessRole(['OWNER']);
-      middleware(req as Request, res as Response, next);
-
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(next).not.toHaveBeenCalled();
     });
   });
 });

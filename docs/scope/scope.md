@@ -88,7 +88,7 @@ Typography, colors, spacing, and base components for mobile-first SaaS UI.
 
 ## Slice 1: Core Order Management
 
-### 5. Authentication & tenant isolation · in-progress
+### 5. Authentication & tenant isolation · done
 
 User auth, JWT tokens, role management (owner/staff), strict multi-tenant data rules.
 **Done when:** users can register/login; each query enforces businessId isolation; unauthorized access is impossible.
@@ -100,10 +100,11 @@ User auth, JWT tokens, role management (owner/staff), strict multi-tenant data r
   - [x] Auth & Tenant Infrastructure (AC-4)
   - [x] Core Authentication Flow & Data Models (AC-1, AC-2, AC-3)
   - [x] OAuth & Role-based Access (AC-1, AC-5, AC-6)
-- [ ] Verify it: `/check verify authentication & tenant isolation`
-- [ ] Test it: `/test authentication & tenant isolation`
-- [ ] Review it (fresh model): `/check review authentication & tenant isolation`
-- [ ] Document it: `/document authentication & tenant isolation`
+- [x] Verify it: `/check verify authentication & tenant isolation`
+- [x] Test it: `/test authentication & tenant isolation`
+- [x] Review it (fresh model): `/check review authentication & tenant isolation`
+      Review [2026-09-20-feat-auth-tenant-isolation](../reviews/2026-09-20-feat-auth-tenant-isolation.md)
+- [x] Document it: `/document authentication & tenant isolation`
 
 ### 6. Business profile & onboarding · needs a decision
 

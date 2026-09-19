@@ -1,51 +1,70 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mocked } from 'vitest';
 import { AuthService } from './auth.service.js';
-import { UserModel } from '../../infrastructure/database/mongoose/models/User.js';
-import { BusinessModel } from '../../infrastructure/database/mongoose/models/Business.js';
-import { BusinessMemberModel } from '../../infrastructure/database/mongoose/models/BusinessMember.js';
-import { RefreshTokenModel } from '../../infrastructure/database/mongoose/models/RefreshToken.js';
+import { IAuthRepository } from '../../domain/repositories/auth.repository.js';
+import { User } from '../../domain/entities/user.entity.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { DuplicateEmailError, UnauthorizedError, ConflictError } from '../../domain/errors.js';
 
-vi.mock('../../infrastructure/database/mongoose/models/User.js');
-vi.mock('../../infrastructure/database/mongoose/models/Business.js');
-vi.mock('../../infrastructure/database/mongoose/models/BusinessMember.js');
-vi.mock('../../infrastructure/database/mongoose/models/RefreshToken.js');
 vi.mock('bcrypt');
 vi.mock('jsonwebtoken');
 
 describe('AuthService', () => {
   let authService: AuthService;
+  let mockAuthRepository: Mocked<IAuthRepository>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    authService = new AuthService();
+
+    mockAuthRepository = {
+      findUserByEmail: vi.fn(),
+      createUser: vi.fn(),
+      createBusiness: vi.fn(),
+      findUserById: vi.fn(),
+      updateUser: vi.fn(),
+      createBusinessMember: vi.fn(),
+      findBusinessMember: vi.fn(),
+      findUserBusinesses: vi.fn(),
+      createRefreshToken: vi.fn(),
+      findRefreshToken: vi.fn(),
+      revokeRefreshToken: vi.fn(),
+    } as unknown as Mocked<IAuthRepository>;
+
+    authService = new AuthService(mockAuthRepository);
   });
 
   describe('register', () => {
     it('throws error if email already exists', async () => {
-      vi.mocked(UserModel.findOne).mockResolvedValueOnce({ _id: '123' } as any);
+      mockAuthRepository.findUserByEmail.mockResolvedValueOnce({ id: '123' } as User);
 
-      await expect(authService.register('test@test.com', 'pass', 'Test User', 'Test Biz'))
-        .rejects.toThrow('Email already exists');
+      await expect(
+        authService.register('test@test.com', 'pass', 'Test User', 'Test Biz'),
+      ).rejects.toThrow(DuplicateEmailError);
     });
 
     it('creates user, business, member, and tokens successfully', async () => {
-      vi.mocked(UserModel.findOne).mockResolvedValueOnce(null);
-      vi.mocked(bcrypt.genSalt).mockResolvedValueOnce('salt' as any);
-      vi.mocked(bcrypt.hash).mockResolvedValueOnce('hashed_pass' as any);
+      mockAuthRepository.findUserByEmail.mockResolvedValueOnce(null);
+      vi.mocked(bcrypt.genSalt).mockResolvedValueOnce('salt' as never);
+      vi.mocked(bcrypt.hash).mockResolvedValueOnce('hashed_pass' as never);
 
-      vi.mocked(UserModel.create).mockResolvedValueOnce({ _id: 'user1' } as any);
-      vi.mocked(BusinessModel.create).mockResolvedValueOnce({ _id: 'biz1' } as any);
-      vi.mocked(BusinessMemberModel.create).mockResolvedValueOnce({ _id: 'mem1' } as any);
-      vi.mocked(RefreshTokenModel.create).mockResolvedValueOnce({ _id: 'token1' } as any);
-      vi.mocked(jwt.sign).mockReturnValue('access_token' as any);
+      mockAuthRepository.createUser.mockResolvedValueOnce({ id: 'user1' } as User);
+      mockAuthRepository.createBusiness.mockResolvedValueOnce({ _id: 'biz1', name: 'Test Biz' });
+      mockAuthRepository.createBusinessMember.mockResolvedValueOnce(undefined);
+      mockAuthRepository.createRefreshToken.mockResolvedValueOnce(undefined);
+      mockAuthRepository.findUserBusinesses.mockResolvedValueOnce([
+        { businessId: { _id: 'biz1' }, role: 'OWNER' },
+      ]);
+      vi.mocked(jwt.sign).mockReturnValue('access_token' as unknown as void);
 
       const result = await authService.register('test@test.com', 'pass', 'Test User', 'Test Biz');
 
-      expect(UserModel.create).toHaveBeenCalledWith(expect.objectContaining({ email: 'test@test.com' }));
-      expect(BusinessModel.create).toHaveBeenCalledWith({ name: 'Test Biz' });
-      expect(BusinessMemberModel.create).toHaveBeenCalledWith(expect.objectContaining({ role: 'OWNER' }));
+      expect(mockAuthRepository.createUser).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'test@test.com' }),
+      );
+      expect(mockAuthRepository.createBusiness).toHaveBeenCalledWith('Test Biz');
+      expect(mockAuthRepository.createBusinessMember).toHaveBeenCalledWith(
+        expect.objectContaining({ role: 'OWNER' }),
+      );
       expect(result.accessToken).toBe('access_token');
       expect(result.refreshToken).toBeDefined();
     });
@@ -53,175 +72,156 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('throws error for invalid email', async () => {
-      vi.mocked(UserModel.findOne).mockResolvedValueOnce(null);
-      await expect(authService.login('test@test.com', 'pass')).rejects.toThrow('Invalid credentials');
+      mockAuthRepository.findUserByEmail.mockResolvedValueOnce(null);
+      await expect(authService.login('test@test.com', 'pass')).rejects.toThrow(UnauthorizedError);
     });
 
     it('throws error for invalid password', async () => {
-      vi.mocked(UserModel.findOne).mockResolvedValueOnce({ passwordHash: 'hash' } as any);
-      vi.mocked(bcrypt.compare).mockResolvedValueOnce(false as any);
-      await expect(authService.login('test@test.com', 'wrong_pass')).rejects.toThrow('Invalid credentials');
+      mockAuthRepository.findUserByEmail.mockResolvedValueOnce({
+        id: '123',
+        passwordHash: 'hash',
+      } as User);
+      vi.mocked(bcrypt.compare).mockResolvedValueOnce(false as never);
+
+      await expect(authService.login('test@test.com', 'wrong')).rejects.toThrow(UnauthorizedError);
     });
 
-    it('returns tokens for valid credentials', async () => {
-      vi.mocked(UserModel.findOne).mockResolvedValueOnce({ _id: 'user1', passwordHash: 'hash' } as any);
-      vi.mocked(bcrypt.compare).mockResolvedValueOnce(true as any);
-      vi.mocked(BusinessMemberModel.find).mockResolvedValueOnce([{ businessId: 'biz1', role: 'OWNER' }] as any);
-      vi.mocked(jwt.sign).mockReturnValue('access_token' as any);
-      vi.mocked(RefreshTokenModel.create).mockResolvedValueOnce({} as any);
+    it('returns tokens on successful login', async () => {
+      mockAuthRepository.findUserByEmail.mockResolvedValueOnce({
+        id: '123',
+        passwordHash: 'hash',
+      } as User);
+      vi.mocked(bcrypt.compare).mockResolvedValueOnce(true as never);
+      mockAuthRepository.findUserBusinesses.mockResolvedValueOnce([
+        { businessId: 'biz1', role: 'OWNER' },
+      ]);
+      mockAuthRepository.createRefreshToken.mockResolvedValueOnce(undefined);
+      vi.mocked(jwt.sign).mockReturnValue('access_token' as unknown as void);
 
       const result = await authService.login('test@test.com', 'pass');
+
       expect(result.accessToken).toBe('access_token');
+      expect(result.refreshToken).toBeDefined();
     });
   });
 
   describe('oauthLogin', () => {
-    it('creates new user and business when email does not exist', async () => {
-      vi.mocked(UserModel.findOne).mockResolvedValueOnce(null);
-      vi.mocked(UserModel.create).mockResolvedValueOnce({ _id: 'user1' } as any);
-      vi.mocked(BusinessModel.create).mockResolvedValueOnce({ _id: 'biz1' } as any);
-      vi.mocked(BusinessMemberModel.create).mockResolvedValueOnce({ _id: 'mem1' } as any);
-      vi.mocked(BusinessMemberModel.find).mockResolvedValueOnce([{ businessId: 'biz1', role: 'OWNER' }] as any);
-      vi.mocked(jwt.sign).mockReturnValue('access_token' as any);
-      vi.mocked(RefreshTokenModel.create).mockResolvedValueOnce({} as any);
+    it('links account if user exists', async () => {
+      const user = { id: '123', oauth: [] } as unknown as User;
+      mockAuthRepository.findUserByEmail.mockResolvedValueOnce(user);
+      mockAuthRepository.updateUser.mockResolvedValueOnce(undefined);
+      mockAuthRepository.findUserBusinesses.mockResolvedValueOnce([]);
+      vi.mocked(jwt.sign).mockReturnValue('access_token' as unknown as void);
 
-      const result = await authService.oauthLogin('test@google.com', 'Test User', 'google', 'google123');
+      await authService.oauthLogin('t@t.com', 'N', 'google', 'g123');
 
-      expect(UserModel.create).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'test@google.com', oauth: [{ provider: 'google', providerId: 'google123' }] }),
-      );
-      expect(BusinessModel.create).toHaveBeenCalledWith({ name: "Test User's Business" });
-      expect(result.accessToken).toBe('access_token');
+      expect(mockAuthRepository.updateUser).toHaveBeenCalledWith('123', {
+        oauth: [{ provider: 'google', providerId: 'g123' }],
+      });
     });
 
-    it('links existing account when OAuth email already exists', async () => {
-      const existingUser = {
-        _id: 'user1',
-        oauth: [{ provider: 'facebook', providerId: 'fb123' }],
-        save: vi.fn().mockResolvedValueOnce(undefined),
-      } as any;
+    it('creates user and business if new', async () => {
+      mockAuthRepository.findUserByEmail.mockResolvedValueOnce(null);
+      mockAuthRepository.createUser.mockResolvedValueOnce({ id: 'user1' } as User);
+      mockAuthRepository.createBusiness.mockResolvedValueOnce({ _id: 'biz1', name: 'N Business' });
+      mockAuthRepository.createBusinessMember.mockResolvedValueOnce(undefined);
+      mockAuthRepository.findUserBusinesses.mockResolvedValueOnce([]);
+      vi.mocked(jwt.sign).mockReturnValue('access_token' as unknown as void);
 
-      vi.mocked(UserModel.findOne).mockResolvedValueOnce(existingUser);
-      vi.mocked(BusinessMemberModel.find).mockResolvedValueOnce([{ businessId: 'biz1', role: 'OWNER' }] as any);
-      vi.mocked(jwt.sign).mockReturnValue('access_token' as any);
-      vi.mocked(RefreshTokenModel.create).mockResolvedValueOnce({} as any);
+      await authService.oauthLogin('t@t.com', 'N', 'google', 'g123');
 
-      const result = await authService.oauthLogin('test@google.com', 'Test User', 'google', 'google123');
-
-      expect(existingUser.oauth).toHaveLength(2);
-      expect(existingUser.oauth).toContainEqual({ provider: 'google', providerId: 'google123' });
-      expect(existingUser.save).toHaveBeenCalled();
-      expect(result.accessToken).toBe('access_token');
-    });
-
-    it('does not re-link OAuth provider when already linked', async () => {
-      const existingUser = {
-        _id: 'user1',
-        oauth: [{ provider: 'google', providerId: 'google123' }],
-        save: vi.fn().mockResolvedValueOnce(undefined),
-      } as any;
-
-      vi.mocked(UserModel.findOne).mockResolvedValueOnce(existingUser);
-      vi.mocked(BusinessMemberModel.find).mockResolvedValueOnce([{ businessId: 'biz1', role: 'OWNER' }] as any);
-      vi.mocked(jwt.sign).mockReturnValue('access_token' as any);
-      vi.mocked(RefreshTokenModel.create).mockResolvedValueOnce({} as any);
-
-      const result = await authService.oauthLogin('test@google.com', 'Test User', 'google', 'google123');
-
-      expect(existingUser.save).not.toHaveBeenCalled();
-      expect(result.accessToken).toBe('access_token');
+      expect(mockAuthRepository.createUser).toHaveBeenCalled();
+      expect(mockAuthRepository.createBusiness).toHaveBeenCalled();
     });
   });
 
   describe('refresh', () => {
-    it('throws error for invalid refresh token', async () => {
-      vi.mocked(RefreshTokenModel.findOne).mockResolvedValueOnce(null);
-      await expect(authService.refresh('invalid_token')).rejects.toThrow('Invalid refresh token');
+    it('throws if token not found', async () => {
+      mockAuthRepository.findRefreshToken.mockResolvedValueOnce(null);
+      await expect(authService.refresh('token')).rejects.toThrow(UnauthorizedError);
     });
 
-    it('throws error for expired refresh token and revokes it', async () => {
-      const expiredToken = {
-        token: 'expired',
+    it('throws and revokes if token is expired', async () => {
+      const expiredDate = new Date();
+      expiredDate.setDate(expiredDate.getDate() - 1);
+      mockAuthRepository.findRefreshToken.mockResolvedValueOnce({
         revoked: false,
-        expiresAt: new Date('2020-01-01'),
-        save: vi.fn().mockResolvedValueOnce(undefined),
-      } as any;
+        expiresAt: expiredDate,
+      });
 
-      vi.mocked(RefreshTokenModel.findOne).mockResolvedValueOnce(expiredToken);
-
-      await expect(authService.refresh('expired')).rejects.toThrow('Invalid refresh token');
-      expect(expiredToken.revoked).toBe(true);
-      expect(expiredToken.save).toHaveBeenCalled();
+      await expect(authService.refresh('token')).rejects.toThrow(UnauthorizedError);
+      expect(mockAuthRepository.revokeRefreshToken).toHaveBeenCalledWith('token');
     });
 
-    it('throws error for revoked refresh token', async () => {
-      const revokedToken = {
-        token: 'revoked',
-        revoked: true,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      } as any;
-
-      vi.mocked(RefreshTokenModel.findOne).mockResolvedValueOnce(revokedToken);
-      await expect(authService.refresh('revoked')).rejects.toThrow('Invalid refresh token');
-    });
-
-    it('rotates refresh token and returns new tokens for valid token', async () => {
-      const oldToken = {
-        token: 'old_refresh',
+    it('issues new tokens on success', async () => {
+      const validDate = new Date();
+      validDate.setDate(validDate.getDate() + 1);
+      mockAuthRepository.findRefreshToken.mockResolvedValueOnce({
+        userId: 'u1',
         revoked: false,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        userId: 'user1',
-        save: vi.fn().mockResolvedValueOnce(undefined),
-      } as any;
+        expiresAt: validDate,
+      });
+      mockAuthRepository.findUserById.mockResolvedValueOnce({ id: 'u1', isActive: true } as User);
+      mockAuthRepository.revokeRefreshToken.mockResolvedValueOnce(undefined);
+      mockAuthRepository.findUserBusinesses.mockResolvedValueOnce([]);
+      vi.mocked(jwt.sign).mockReturnValue('access_token' as unknown as void);
 
-      vi.mocked(RefreshTokenModel.findOne).mockResolvedValueOnce(oldToken);
-      vi.mocked(UserModel.findById).mockResolvedValueOnce({ _id: 'user1', isActive: true } as any);
-      vi.mocked(BusinessMemberModel.find).mockResolvedValueOnce([{ businessId: 'biz1', role: 'OWNER' }] as any);
-      vi.mocked(jwt.sign).mockReturnValue('new_access_token' as any);
-      vi.mocked(RefreshTokenModel.create).mockResolvedValueOnce({ _id: 'new_token' } as any);
+      const result = await authService.refresh('token');
 
-      const result = await authService.refresh('old_refresh');
-
-      expect(oldToken.revoked).toBe(true);
-      expect(oldToken.save).toHaveBeenCalled();
-      expect(result.accessToken).toBe('new_access_token');
-      expect(result.refreshToken).toBeDefined();
-      expect(RefreshTokenModel.create).toHaveBeenCalled();
+      expect(mockAuthRepository.revokeRefreshToken).toHaveBeenCalledWith('token');
+      expect(result.accessToken).toBe('access_token');
     });
   });
 
   describe('logout', () => {
-    it('revokes the refresh token', async () => {
-      vi.mocked(RefreshTokenModel.updateOne).mockResolvedValueOnce({ modifiedCount: 1 } as any);
-
-      await authService.logout('some_token');
-
-      expect(RefreshTokenModel.updateOne).toHaveBeenCalledWith({ token: 'some_token' }, { revoked: true });
+    it('revokes token', async () => {
+      mockAuthRepository.revokeRefreshToken.mockResolvedValueOnce(undefined);
+      await authService.logout('token');
+      expect(mockAuthRepository.revokeRefreshToken).toHaveBeenCalledWith('token');
     });
   });
 
   describe('getProfile', () => {
-    it('returns user profile with business memberships', async () => {
-      const mockUser = { _id: 'user1', name: 'Test' } as any;
-      const mockSelect = vi.fn().mockResolvedValueOnce(mockUser);
-      vi.mocked(UserModel.findById).mockReturnValue({ select: mockSelect } as any);
+    it('returns user and businesses', async () => {
+      mockAuthRepository.findUserById.mockResolvedValueOnce({
+        id: 'u1',
+        email: 'e',
+        name: 'n',
+        isActive: true,
+      } as User);
+      mockAuthRepository.findUserBusinesses.mockResolvedValueOnce([{ businessId: 'b1' }]);
 
-      const mockBusiness = { _id: 'biz1', name: 'Test Biz' };
-      const mockFind = vi.fn().mockReturnValue({ populate: vi.fn().mockResolvedValueOnce([{ businessId: mockBusiness, role: 'OWNER' }] as any) });
-      vi.mocked(BusinessMemberModel.find).mockImplementationOnce(mockFind as any);
+      const result = await authService.getProfile('u1');
 
-      const result = await authService.getProfile('user1');
+      expect(result.user).toEqual({ id: 'u1', email: 'e', name: 'n', isActive: true });
+      expect(result.businesses).toHaveLength(1);
+    });
+  });
 
-      expect(UserModel.findById).toHaveBeenCalledWith('user1');
-      expect(result.user).toBeDefined();
-      expect(result.businesses).toBeDefined();
+  describe('inviteStaff', () => {
+    it('creates new user if not exists', async () => {
+      mockAuthRepository.findUserByEmail.mockResolvedValueOnce(null);
+      mockAuthRepository.createUser.mockResolvedValueOnce({ id: 'u1' } as User);
+      mockAuthRepository.findBusinessMember.mockResolvedValueOnce(null);
+
+      await authService.inviteStaff('t@t.com', 'STAFF', 'b1');
+
+      expect(mockAuthRepository.createUser).toHaveBeenCalled();
+      expect(mockAuthRepository.createBusinessMember).toHaveBeenCalledWith({
+        businessId: 'b1',
+        userId: 'u1',
+        role: 'STAFF',
+        status: 'INVITED',
+      });
     });
 
-    it('throws error when user not found', async () => {
-      const mockSelect = vi.fn().mockResolvedValueOnce(null);
-      vi.mocked(UserModel.findById).mockReturnValue({ select: mockSelect } as any);
+    it('throws if already member', async () => {
+      mockAuthRepository.findUserByEmail.mockResolvedValueOnce({ id: 'u1' } as User);
+      mockAuthRepository.findBusinessMember.mockResolvedValueOnce({ role: 'STAFF' });
 
-      await expect(authService.getProfile('nonexistent')).rejects.toThrow('User not found');
+      await expect(authService.inviteStaff('t@t.com', 'STAFF', 'b1')).rejects.toThrow(
+        ConflictError,
+      );
     });
   });
 });

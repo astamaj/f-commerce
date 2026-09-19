@@ -1,7 +1,7 @@
 # 0003. Authentication and tenant isolation
 
 **Date**: 2026-09-11
-**Status**: In Progress
+**Status**: Done
 
 ## Summary
 
@@ -31,11 +31,13 @@ This design establishes the authentication flow and tenant isolation mechanism f
 We will enforce tenant isolation at the Mongoose driver layer using a global plugin hooked into `AsyncLocalStorage`. Users authenticate via JWTs (Email/Password or OAuth), and the backend automatically scopes their permissions to the appropriate `BusinessMember` role.
 
 ## Rationale
+
 See [rationale.md](./rationale.md).
 
 ## Feature design
 
 **Data model sketch**:
+
 - **User**: `_id`, `email` (unique), `passwordHash`, `name`, `oauth` (array of `providerId`), `createdAt`
 - **Business**: `_id`, `name`, `createdAt`
 - **BusinessMember**: `_id`, `businessId` (FK), `userId` (FK), `role` (enum: OWNER, STAFF), `status` (ACTIVE, INVITED)
@@ -43,22 +45,22 @@ See [rationale.md](./rationale.md).
 
 **API surface**:
 
-| Endpoint | Method | Key inputs | Key outputs | Auth | Key errors |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `/api/auth/register` | POST | email, password, name, businessName | JWT, refreshToken | none | 409 (Email exists) |
-| `/api/auth/login` | POST | email, password | JWT, refreshToken | none | 401 (Invalid creds) |
-| `/api/auth/oauth/:provider`| POST | OAuth token/code | JWT, refreshToken | none | 401 (OAuth fail) |
-| `/api/auth/refresh` | POST | refreshToken (cookie) | JWT, refreshToken | none | 401 (Revoked/Expired) |
-| `/api/auth/logout` | POST | refreshToken (cookie) | success status | bearer | 401 |
-| `/api/auth/me` | GET | none | User profile, businesses | bearer | 401 |
+| Endpoint                    | Method | Key inputs                          | Key outputs              | Auth   | Key errors            |
+| :-------------------------- | :----- | :---------------------------------- | :----------------------- | :----- | :-------------------- |
+| `/api/auth/register`        | POST   | email, password, name, businessName | JWT, refreshToken        | none   | 409 (Email exists)    |
+| `/api/auth/login`           | POST   | email, password                     | JWT, refreshToken        | none   | 401 (Invalid creds)   |
+| `/api/auth/oauth/:provider` | POST   | OAuth token/code                    | JWT, refreshToken        | none   | 401 (OAuth fail)      |
+| `/api/auth/refresh`         | POST   | refreshToken (cookie)               | JWT, refreshToken        | none   | 401 (Revoked/Expired) |
+| `/api/auth/logout`          | POST   | refreshToken (cookie)               | success status           | bearer | 401                   |
+| `/api/auth/me`              | GET    | none                                | User profile, businesses | bearer | 401                   |
 
 **Value sourcing**:
 
-| Action | Value produced / displayed | Source |
-| :--- | :--- | :--- |
-| `register` | User, Business, BusinessMember records | Client input + backend generated defaults |
-| `login` | JWT and Refresh Token | Backend generated, signed with secret |
-| `query interception` | `{ businessId }` filter | Derived from `AsyncLocalStorage` context set by Auth Middleware |
+| Action               | Value produced / displayed             | Source                                                          |
+| :------------------- | :------------------------------------- | :-------------------------------------------------------------- |
+| `register`           | User, Business, BusinessMember records | Client input + backend generated defaults                       |
+| `login`              | JWT and Refresh Token                  | Backend generated, signed with secret                           |
+| `query interception` | `{ businessId }` filter                | Derived from `AsyncLocalStorage` context set by Auth Middleware |
 
 ## Build plan
 
@@ -71,13 +73,16 @@ See [rationale.md](./rationale.md).
 ## Consequences
 
 **Positive**:
+
 - Ironclad tenant isolation protects customer data.
 - Standardized authentication flow.
 - Separation of `User` and `BusinessMember` provides flexibility for multi-business users.
 
 **Negative / tradeoffs**:
+
 - `AsyncLocalStorage` can be tricky to debug if context is lost in asynchronous callbacks.
 - Global plugins mean background jobs or admin scripts must intentionally bypass or set the context.
 
 ## Follow-up
+
 - Ensure background workers (BullMQ) have a way to securely execute cross-tenant or specific-tenant operations by injecting the correct context.

@@ -1,14 +1,14 @@
-import { TenantEntity } from './base.entity.js';
+import { BaseEntity } from './base.entity.js';
 
 export enum UserRole {
   OWNER = 'OWNER',
   STAFF = 'STAFF',
 }
 
-export interface User extends TenantEntity {
+export interface User extends BaseEntity {
   email: string;
   passwordHash: string;
   name: string;
-  role: UserRole;
+  oauth: { provider: string; providerId: string }[];
   isActive: boolean;
 }

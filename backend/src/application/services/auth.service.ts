@@ -1,11 +1,15 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { randomBytes } from 'node:crypto';
-import { UserModel, UserDocument } from '../../infrastructure/database/mongoose/models/User.js';
-import { BusinessModel } from '../../infrastructure/database/mongoose/models/Business.js';
-import { BusinessMemberModel, BusinessMemberDocument } from '../../infrastructure/database/mongoose/models/BusinessMember.js';
-import { RefreshTokenModel } from '../../infrastructure/database/mongoose/models/RefreshToken.js';
+import { IAuthRepository } from '../../domain/repositories/auth.repository.js';
 import { config } from '../../infrastructure/config.js';
+import { User } from '../../domain/entities/user.entity.js';
+import {
+  DuplicateEmailError,
+  UnauthorizedError,
+  ConflictError,
+  NotFoundError,
+} from '../../domain/errors.js';
 
 export interface AuthTokens {
   accessToken: string;
@@ -13,78 +17,86 @@ export interface AuthTokens {
 }
 
 export class AuthService {
-  async register(email: string, passwordHash: string, name: string, businessName: string): Promise<AuthTokens> {
-    const existingUser = await UserModel.findOne({ email });
+  constructor(private readonly authRepository: IAuthRepository) {}
+
+  async register(
+    email: string,
+    passwordHash: string,
+    name: string,
+    businessName: string,
+  ): Promise<AuthTokens> {
+    const existingUser = await this.authRepository.findUserByEmail(email);
     if (existingUser) {
-      throw new Error('Email already exists');
+      throw new DuplicateEmailError('Email already exists');
     }
 
-    // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashed = await bcrypt.hash(passwordHash, salt);
 
-    // Create User, Business, and BusinessMember
-    // Note: To truly do this transactionally, a MongoDB session should be used
-    const user = await UserModel.create({
+    const user = await this.authRepository.createUser({
       email,
       passwordHash: hashed,
       name,
       oauth: [],
+      isActive: true,
     });
 
-    const business = await BusinessModel.create({
-      name: businessName,
-    });
+    const business = await this.authRepository.createBusiness(businessName);
 
-    const member = await BusinessMemberModel.create({
+    await this.authRepository.createBusinessMember({
       businessId: business._id,
-      userId: user._id,
+      userId: user.id,
       role: 'OWNER',
       status: 'ACTIVE',
     });
 
-    return this.generateTokens(user._id.toString(), [{ businessId: business._id.toString(), role: 'OWNER' }]);
+    return this.generateTokens(user.id, [{ businessId: business._id, role: 'OWNER' }]);
   }
 
   async login(email: string, passwordHash: string): Promise<AuthTokens> {
-    const user = await UserModel.findOne({ email });
+    const user = await this.authRepository.findUserByEmail(email);
     if (!user || !user.passwordHash) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     const isValid = await bcrypt.compare(passwordHash, user.passwordHash);
     if (!isValid) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     return this.createTokensForUser(user);
   }
 
-  async oauthLogin(email: string, name: string, provider: string, providerId: string): Promise<AuthTokens> {
-    let user = await UserModel.findOne({ email });
-    
+  async oauthLogin(
+    email: string,
+    name: string,
+    provider: string,
+    providerId: string,
+  ): Promise<AuthTokens> {
+    let user = await this.authRepository.findUserByEmail(email);
+
     if (user) {
-      // Link account if provider not present
-      const providerExists = user.oauth.some(o => o.provider === provider && o.providerId === providerId);
+      const providerExists = user.oauth?.some(
+        (o) => o.provider === provider && o.providerId === providerId,
+      );
       if (!providerExists) {
-        user.oauth.push({ provider, providerId });
-        await user.save();
+        const updatedOauth = [...(user.oauth || []), { provider, providerId }];
+        await this.authRepository.updateUser(user.id, { oauth: updatedOauth });
+        user.oauth = updatedOauth;
       }
     } else {
-      // Need to create a user and a default business for OAuth if they don't exist
-      user = await UserModel.create({
+      user = await this.authRepository.createUser({
         email,
         name,
         oauth: [{ provider, providerId }],
+        isActive: true,
       });
 
-      const business = await BusinessModel.create({
-        name: `${name}'s Business`,
-      });
+      const business = await this.authRepository.createBusiness(`${name}'s Business`);
 
-      await BusinessMemberModel.create({
+      await this.authRepository.createBusinessMember({
         businessId: business._id,
-        userId: user._id,
+        userId: user.id,
         role: 'OWNER',
         status: 'ACTIVE',
       });
@@ -93,70 +105,95 @@ export class AuthService {
     return this.createTokensForUser(user);
   }
 
-  private async createTokensForUser(user: UserDocument): Promise<AuthTokens> {
-    const members = await BusinessMemberModel.find({ userId: user._id, status: 'ACTIVE' });
-    const memberships = members.map(m => ({
-      businessId: m.businessId.toString(),
+  private async createTokensForUser(user: User): Promise<AuthTokens> {
+    const members = (await this.authRepository.findUserBusinesses(user.id)) as {
+      businessId: string | { _id: string };
+      role: string;
+    }[];
+    const memberships = members.map((m) => ({
+      businessId: (m.businessId as Record<string, unknown>)._id
+        ? String((m.businessId as Record<string, unknown>)._id)
+        : String(m.businessId),
       role: m.role,
     }));
 
-    return this.generateTokens(user._id.toString(), memberships);
+    return this.generateTokens(user.id, memberships);
   }
 
-  private async generateTokens(userId: string, memberships: { businessId: string; role: string }[]): Promise<AuthTokens> {
-    const accessToken = jwt.sign(
-      { userId, memberships },
-      config.JWT_SECRET,
-      { expiresIn: '15m' }
-    );
+  private async generateTokens(
+    userId: string,
+    memberships: { businessId: string; role: string }[],
+  ): Promise<AuthTokens> {
+    const accessToken = jwt.sign({ userId, memberships }, config.JWT_SECRET, { expiresIn: '15m' });
 
     const refreshTokenValue = randomBytes(40).toString('hex');
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+    expiresAt.setDate(expiresAt.getDate() + 7);
 
-    await RefreshTokenModel.create({
-      userId,
-      token: refreshTokenValue,
-      expiresAt,
-    });
+    await this.authRepository.createRefreshToken(userId, refreshTokenValue, expiresAt);
 
     return { accessToken, refreshToken: refreshTokenValue };
   }
 
   async refresh(token: string): Promise<AuthTokens> {
-    const refreshTokenDoc = await RefreshTokenModel.findOne({ token });
+    const refreshTokenDoc = (await this.authRepository.findRefreshToken(token)) as {
+      userId: string;
+      revoked: boolean;
+      expiresAt: Date;
+    } | null;
     if (!refreshTokenDoc || refreshTokenDoc.revoked || refreshTokenDoc.expiresAt < new Date()) {
       if (refreshTokenDoc && !refreshTokenDoc.revoked) {
-         refreshTokenDoc.revoked = true;
-         await refreshTokenDoc.save();
+        await this.authRepository.revokeRefreshToken(token);
       }
-      throw new Error('Invalid refresh token');
+      throw new UnauthorizedError('Invalid refresh token');
     }
 
-    const user = await UserModel.findById(refreshTokenDoc.userId);
+    const user = await this.authRepository.findUserById(refreshTokenDoc.userId.toString());
     if (!user || !user.isActive) {
-      throw new Error('User not found or inactive');
+      throw new NotFoundError('User not found or inactive');
     }
 
-    // Revoke old refresh token (rotation)
-    refreshTokenDoc.revoked = true;
-    await refreshTokenDoc.save();
+    await this.authRepository.revokeRefreshToken(token);
 
     return this.createTokensForUser(user);
   }
 
   async logout(token: string): Promise<void> {
-    await RefreshTokenModel.updateOne({ token }, { revoked: true });
+    await this.authRepository.revokeRefreshToken(token);
   }
 
   async getProfile(userId: string) {
-    const user = await UserModel.findById(userId).select('-passwordHash');
-    if (!user) throw new Error('User not found');
+    const user = await this.authRepository.findUserById(userId);
+    if (!user) throw new NotFoundError('User not found');
 
-    const businesses = await BusinessMemberModel.find({ userId }).populate('businessId');
+    const businesses = await this.authRepository.findUserBusinesses(userId);
     return {
-      user,
-      businesses
+      user: { id: user.id, email: user.email, name: user.name, isActive: user.isActive },
+      businesses,
     };
+  }
+
+  async inviteStaff(email: string, role: 'OWNER' | 'STAFF', businessId: string): Promise<void> {
+    let user = await this.authRepository.findUserByEmail(email);
+    if (!user) {
+      user = await this.authRepository.createUser({
+        email,
+        name: 'Pending Invite',
+        oauth: [],
+        isActive: false,
+      });
+    }
+
+    const existingMember = await this.authRepository.findBusinessMember(businessId, user.id);
+    if (existingMember) {
+      throw new ConflictError('User is already a member or invited to this business');
+    }
+
+    await this.authRepository.createBusinessMember({
+      businessId,
+      userId: user.id,
+      role,
+      status: 'INVITED',
+    });
   }
 }

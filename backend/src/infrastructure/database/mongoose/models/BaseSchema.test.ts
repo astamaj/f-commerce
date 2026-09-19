@@ -11,7 +11,7 @@ describe('Tenant Isolation Plugin', () => {
       {
         name: { type: String, required: true },
       },
-      baseSchemaOptions
+      baseSchemaOptions,
     );
     tenantPlugin(TestSchema);
   });
@@ -77,11 +77,17 @@ describe('Tenant Isolation Plugin', () => {
 
   describe('tenant isolation error handling', () => {
     it('throws error when no businessId in context', () => {
-      const context = { userId: 'user1' } as any; // no businessId
+      const context = { userId: 'user1' } as unknown as {
+        userId: string;
+        businessId: string;
+        role: 'OWNER';
+      }; // no businessId
 
-      expect(() => runWithContext(context, () => {
-        getTenantId();
-      })).not.toThrow();
+      expect(() =>
+        runWithContext(context, () => {
+          getTenantId();
+        }),
+      ).not.toThrow();
 
       expect(getTenantId()).toBeUndefined();
     });

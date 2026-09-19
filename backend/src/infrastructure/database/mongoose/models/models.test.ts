@@ -3,21 +3,17 @@ import mongoose from 'mongoose';
 import { UserModel } from './User.js';
 import { OrderModel } from './Order.js';
 import { ProductModel } from './Product.js';
-import { UserRole } from '../../../../domain/entities/user.entity.js';
 import { OrderStatus } from '../../../../domain/entities/order.entity.js';
 
 describe('Data Models Validation', () => {
-  it('UserModel requires businessId and basic fields', async () => {
+  it('UserModel requires basic fields', async () => {
     const user = new UserModel({});
     const err = await user.validate().catch((e) => e);
 
     expect(err).toBeDefined();
     if (err) {
-      expect(err.errors['businessId']).toBeDefined();
       expect(err.errors['email']).toBeDefined();
-      expect(err.errors['passwordHash']).toBeDefined();
       expect(err.errors['name']).toBeDefined();
-      expect(err.errors['role']).toBeDefined();
     }
   });
 
@@ -26,8 +22,6 @@ describe('Data Models Validation', () => {
       email: 'test@example.com',
       passwordHash: 'hashed',
       name: 'Test User',
-      role: UserRole.OWNER,
-      businessId: new mongoose.Types.ObjectId(),
     });
 
     const err = await user.validate().catch((e) => e);

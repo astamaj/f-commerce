@@ -5,13 +5,23 @@ import cookieParser from 'cookie-parser';
 import { authRouter } from './auth.controller.js';
 import { AuthService } from '../../application/services/auth.service.js';
 import { requireAuth } from '../middlewares/auth.middleware.js';
+import { DuplicateEmailError, UnauthorizedError, ConflictError } from '../../domain/errors.js';
 
 vi.mock('../../application/services/auth.service.js');
 vi.mock('../middlewares/auth.middleware.js', () => ({
   requireAuth: vi.fn((req, res, next) => {
     req.user = { userId: '123', memberships: [] };
     next();
-  })
+  }),
+  requireBusinessRole: vi.fn(
+    () =>
+      (
+        _req: import('express').Request,
+        _res: import('express').Response,
+        next: import('express').NextFunction,
+      ) =>
+        next(),
+  ),
 }));
 
 const app = express();
@@ -28,12 +38,15 @@ describe('Auth Controller', () => {
     it('returns 201 on success', async () => {
       vi.mocked(AuthService.prototype.register).mockResolvedValueOnce({
         accessToken: 'access',
-        refreshToken: 'refresh'
+        refreshToken: 'refresh',
       });
 
-      const res = await request(app)
-        .post('/api/auth/register')
-        .send({ email: 't@t.com', password: 'p', name: 'N', businessName: 'B' });
+      const res = await request(app).post('/api/auth/register').send({
+        email: 'test@test.com',
+        password: 'password123',
+        name: 'Test User',
+        businessName: 'Test Business',
+      });
 
       expect(res.status).toBe(201);
       expect(res.body).toEqual({ accessToken: 'access' });
@@ -41,11 +54,16 @@ describe('Auth Controller', () => {
     });
 
     it('returns 409 if email exists', async () => {
-      vi.mocked(AuthService.prototype.register).mockRejectedValueOnce(new Error('Email already exists'));
+      vi.mocked(AuthService.prototype.register).mockRejectedValueOnce(
+        new DuplicateEmailError('Email already exists'),
+      );
 
-      const res = await request(app)
-        .post('/api/auth/register')
-        .send({ email: 't@t.com', password: 'p', name: 'N', businessName: 'B' });
+      const res = await request(app).post('/api/auth/register').send({
+        email: 'test@test.com',
+        password: 'password123',
+        name: 'Test User',
+        businessName: 'Test Business',
+      });
 
       expect(res.status).toBe(409);
     });
@@ -55,7 +73,7 @@ describe('Auth Controller', () => {
     it('returns 200 on success', async () => {
       vi.mocked(AuthService.prototype.login).mockResolvedValueOnce({
         accessToken: 'access',
-        refreshToken: 'refresh'
+        refreshToken: 'refresh',
       });
 
       const res = await request(app)
@@ -67,7 +85,9 @@ describe('Auth Controller', () => {
     });
 
     it('returns 401 on invalid credentials', async () => {
-      vi.mocked(AuthService.prototype.login).mockRejectedValueOnce(new Error('Invalid credentials'));
+      vi.mocked(AuthService.prototype.login).mockRejectedValueOnce(
+        new UnauthorizedError('Invalid credentials'),
+      );
 
       const res = await request(app)
         .post('/api/auth/login')
@@ -81,7 +101,7 @@ describe('Auth Controller', () => {
     it('returns 200 on OAuth success', async () => {
       vi.mocked(AuthService.prototype.oauthLogin).mockResolvedValueOnce({
         accessToken: 'oauth_access',
-        refreshToken: 'oauth_refresh'
+        refreshToken: 'oauth_refresh',
       });
 
       const res = await request(app)
@@ -94,7 +114,9 @@ describe('Auth Controller', () => {
     });
 
     it('returns 401 on OAuth failure', async () => {
-      vi.mocked(AuthService.prototype.oauthLogin).mockRejectedValueOnce(new Error('OAuth fail'));
+      vi.mocked(AuthService.prototype.oauthLogin).mockRejectedValueOnce(
+        new UnauthorizedError('OAuth fail'),
+      );
 
       const res = await request(app)
         .post('/api/auth/oauth/google')
@@ -108,7 +130,7 @@ describe('Auth Controller', () => {
     it('returns 200 with new access token', async () => {
       vi.mocked(AuthService.prototype.refresh).mockResolvedValueOnce({
         accessToken: 'new_access',
-        refreshToken: 'new_refresh'
+        refreshToken: 'new_refresh',
       });
 
       const res = await request(app)
@@ -123,11 +145,13 @@ describe('Auth Controller', () => {
     it('returns 401 when refresh token is missing', async () => {
       const res = await request(app).post('/api/auth/refresh');
 
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(400);
     });
 
     it('returns 401 for invalid refresh token', async () => {
-      vi.mocked(AuthService.prototype.refresh).mockRejectedValueOnce(new Error('Invalid refresh token'));
+      vi.mocked(AuthService.prototype.refresh).mockRejectedValueOnce(
+        new UnauthorizedError('Invalid refresh token'),
+      );
 
       const res = await request(app)
         .post('/api/auth/refresh')
@@ -152,23 +176,67 @@ describe('Auth Controller', () => {
 
   describe('GET /api/auth/me', () => {
     it('returns 200 and profile', async () => {
-      vi.mocked(AuthService.prototype.getProfile).mockResolvedValueOnce({ user: { name: 'Test' }, businesses: [] } as any);
+      vi.mocked(AuthService.prototype.getProfile).mockResolvedValueOnce({
+        user: { id: '1', email: 'test@test.com', name: 'Test', isActive: true },
+        businesses: [],
+      });
 
       const res = await request(app).get('/api/auth/me');
 
       expect(res.status).toBe(200);
-      expect(res.body.user).toEqual({ name: 'Test' });
+      expect(res.body.user).toEqual({
+        id: '1',
+        email: 'test@test.com',
+        name: 'Test',
+        isActive: true,
+      });
       expect(requireAuth).toHaveBeenCalled();
     });
 
     it('returns 401 when unauthorized', async () => {
-      vi.mocked(requireAuth).mockImplementation((req, res, next) => {
+      vi.mocked(requireAuth).mockImplementationOnce((_req, res) => {
         res.status(401).json({ error: 'Unauthorized' });
       });
 
       const res = await request(app).get('/api/auth/me');
 
       expect(res.status).toBe(401);
+    });
+  });
+
+  describe('POST /api/auth/invite', () => {
+    it('returns 200 on success', async () => {
+      vi.mocked(AuthService.prototype.inviteStaff).mockResolvedValueOnce(undefined);
+
+      const res = await request(app)
+        .post('/api/auth/invite')
+        .set('x-business-id', 'biz123')
+        .send({ email: 'new@staff.com', role: 'STAFF' });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ success: true, message: 'User invited successfully' });
+    });
+
+    it('returns 400 for invalid role', async () => {
+      const res = await request(app)
+        .post('/api/auth/invite')
+        .set('x-business-id', 'biz123')
+        .send({ email: 'new@staff.com', role: 'INVALID' });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('returns 409 if already a member', async () => {
+      vi.mocked(AuthService.prototype.inviteStaff).mockRejectedValueOnce(
+        new ConflictError('User is already a member or invited to this business'),
+      );
+
+      const res = await request(app)
+        .post('/api/auth/invite')
+        .set('x-business-id', 'biz123')
+        .send({ email: 'existing@staff.com', role: 'STAFF' });
+
+      expect(res.status).toBe(409);
     });
   });
 });

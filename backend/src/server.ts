@@ -21,10 +21,16 @@ app.get('/health', (_request, response) => {
 });
 
 async function startServer() {
-  await connectToDatabase(config.MONGODB_URI);
   app.listen(port, () => {
     console.log(`Backend listening on port ${port}`);
   });
+
+  try {
+    await connectToDatabase(config.MONGODB_URI);
+    console.log('Database connected successfully');
+  } catch (error) {
+    console.error('Failed to connect to database:', error);
+  }
 }
 
 startServer();

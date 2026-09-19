@@ -21,4 +21,7 @@ const BusinessMemberSchema = new Schema<BusinessMemberDocument>(
 // Ensure a user can only have one role per business
 BusinessMemberSchema.index({ businessId: 1, userId: 1 }, { unique: true });
 
-export const BusinessMemberModel = mongoose.model<BusinessMemberDocument>('BusinessMember', BusinessMemberSchema);
+export const BusinessMemberModel = mongoose.model<BusinessMemberDocument>(
+  'BusinessMember',
+  BusinessMemberSchema,
+);

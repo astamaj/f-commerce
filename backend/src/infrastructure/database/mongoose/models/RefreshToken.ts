@@ -21,4 +21,7 @@ const RefreshTokenSchema = new Schema<RefreshTokenDocument>(
 // Optional: Add TTL index to automatically delete expired tokens
 RefreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-export const RefreshTokenModel = mongoose.model<RefreshTokenDocument>('RefreshToken', RefreshTokenSchema);
+export const RefreshTokenModel = mongoose.model<RefreshTokenDocument>(
+  'RefreshToken',
+  RefreshTokenSchema,
+);

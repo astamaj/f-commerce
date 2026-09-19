@@ -3,17 +3,20 @@
 ## Verification Verdict: **BLOCKED**
 
 ### Spec Contract Loaded
+
 Governing spec: `docs/specs/0003-authentication-tenant-isolation` with 6 acceptance criteria (AC-1 through AC-6)
 
 ### What Passed
 
 **Typecheck**: ✅ PASSES
+
 - Fixed 3 type errors in `BaseSchema.test.ts` (role string literal inference)
 - Fixed type errors in `BaseSchema.ts` (SaveOptions/callback typing)
 - Fixed type error in `auth.controller.ts` (oauth params string type)
 - `npm run typecheck --workspace @f-commerce/backend` exits clean
 
 **Unit Tests**: ✅ 45 of 47 pass
+
 - All 15 AuthService tests pass (register, login, oauthLogin, refresh, logout, getProfile)
 - All 12 Auth Controller tests pass (register, login, oauth, refresh, logout, me)
 - All 7 Auth Middleware tests pass (requireAuth, requireBusinessRole)
@@ -23,12 +26,13 @@ Governing spec: `docs/specs/0003-authentication-tenant-isolation` with 6 accepta
 ### What Is Blocked
 
 **Runtime verification**: ❌ BLOCKED
+
 - MongoDB is not available on this system (`MONGODB_URI` is empty in environment)
 - Server cannot start: `server.ts` calls `connectToDatabase(config.MONGODB_URI)` → `mongoose.connect(uri)` which blocks indefinitely
 - All 6 acceptance criteria require running the live app to verify:
   - **AC-1**: Email/register/login/oAuth manual steps - cannot exercise without running server
   - **AC-2**: JWT + refresh token lifecycle - cannot verify without running server
-  - **AC-3**: BusinessMember mapping via `/api/auth/me` - cannot exercise without running server  
+  - **AC-3**: BusinessMember mapping via `/api/auth/me` - cannot exercise without running server
   - **AC-4**: Tenant isolation plugin behavior - cannot verify database query injection without running server
   - **AC-5**: Role-based access control - cannot test 403 response without running server
   - **AC-6**: OAuth email collision linking - cannot test without running server
@@ -77,10 +81,10 @@ To actually run the `/check verify` against the spec, start MongoDB and then:
 
 ### Evidence Ledger (what was verified vs blocked)
 
-| Behavior kind | Evidence |
-| --- | --- |
+| Behavior kind         | Evidence                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------ |
 | **PASS** (code-level) | Typecheck passes; all unit/service/middleware tests pass; code reviewed against spec |
-| **BLOCKED** (runtime) | MongoDB not available; server cannot start; cannot exercise any AC-N at runtime |
+| **BLOCKED** (runtime) | MongoDB not available; server cannot start; cannot exercise any AC-N at runtime      |
 
 ### Next Steps
 

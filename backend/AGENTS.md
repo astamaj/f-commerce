@@ -8,8 +8,10 @@ The backend is the Express API workspace. It currently exposes the health endpoi
 
 | File                 | Owns                                         |
 | -------------------- | -------------------------------------------- |
-| `src/server.ts`      | Express app setup and the `/health` endpoint |
+| `src/server.ts`      | Express app setup, `/health`, `/api/auth`    |
 | `src/server.test.ts` | Health smoke test without MongoDB or Redis   |
+| `src/infrastructure/database/mongoose/models/BaseSchema.ts` | Global Mongoose plugin for strict tenant isolation |
+| `src/application/services/auth.service.ts` | Core authentication and tenant logic (Clean Arch) |
 | `package.json`       | Backend scripts and dependencies             |
 
 ## Commands
@@ -34,7 +36,7 @@ npm run test --workspace @f-commerce/backend
 ## Gotchas
 
 - The backend development server uses port 4000 by default.
-- The scaffold does not connect to MongoDB or Redis yet.
-- The server must validate the required backend environment variables from docs/specs/0001-stack-and-architecture.md before listening; currently only PORT is read.
+- The server validates the required backend environment variables from docs/specs/0001-stack-and-architecture.md using Zod.
+- Tenant isolation is strictly enforced by a global Mongoose plugin using `AsyncLocalStorage`. If background workers or admin scripts need to operate across tenants, they must explicitly set `{ bypassTenantIsolation: true }` in query options or use `runWithContext`.
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite._
