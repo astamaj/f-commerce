@@ -1,7 +1,7 @@
 # 0003. Authentication and tenant isolation
 
 **Date**: 2026-09-11
-**Status**: Done
+**Status**: Accepted
 
 ## Summary
 

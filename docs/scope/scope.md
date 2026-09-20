@@ -16,7 +16,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 2   | Data model                        | Foundation | done        |
 | 3   | Coding standards & tooling        | Foundation | done        |
 | 4   | Design system & UI foundation     | Foundation | done        |
-| 5   | Authentication & tenant isolation | Slice 1    | in-progress |
+| 5   | Authentication & tenant isolation | Slice 1    | done        |
 | 6   | Business profile & onboarding     | Slice 1    | planned     |
 | 7   | Customers                         | Slice 1    | planned     |
 | 8   | Products & categories             | Slice 2    | planned     |
