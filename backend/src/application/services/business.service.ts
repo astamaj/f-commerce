@@ -52,13 +52,6 @@ export class BusinessService {
       logoUrl?: string;
     },
   ): Promise<Business | null> {
-    const draft: Business['onboardingDraft'] = {
-      name: data.name,
-      currency: data.currency as Business['currency'],
-      address: data.address,
-      logoUrl: data.logoUrl,
-    };
-
     return this.businessRepository.updateProfile(businessId, {
       name: data.name,
       currency: data.currency,
@@ -70,7 +63,7 @@ export class BusinessService {
   }
 
   async uploadLogo(
-    businessId: string,
+    _businessId: string,
     imageBuffer: Buffer,
   ): Promise<{ logoUrl: string }> {
     const result = await this.cloudinaryService.uploadImage(imageBuffer);
