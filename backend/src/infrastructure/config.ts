@@ -11,6 +11,9 @@ const envSchema = z.object({
     .default('super-secret-jwt-refresh-key-replace-in-production'),
   OAUTH_GOOGLE_CLIENT_ID: z.string().optional(),
   OAUTH_FACEBOOK_CLIENT_ID: z.string().optional(),
+  CLOUDINARY_CLOUD_NAME: z.string().min(1, 'CLOUDINARY_CLOUD_NAME is required'),
+  CLOUDINARY_API_KEY: z.string().min(1, 'CLOUDINARY_API_KEY is required'),
+  CLOUDINARY_API_SECRET: z.string().min(1, 'CLOUDINARY_API_SECRET is required'),
 });
 
 const parsed = envSchema.safeParse(process.env);
