@@ -106,12 +106,21 @@ User auth, JWT tokens, role management (owner/staff), strict multi-tenant data r
       Review [2026-09-20-feat-auth-tenant-isolation](../reviews/2026-09-20-feat-auth-tenant-isolation.md)
 - [x] Document it: `/document authentication & tenant isolation`
 
-### 6. Business profile & onboarding · needs a decision
+### 6. Business profile & onboarding · in-progress (building)
 
 Registration flow creates business account, collects business info (name, logo, currency, address).
 **Done when:** new user can complete onboarding and see their business data isolated from others.
 
-- [ ] Design it (spec): `/architect business onboarding`
+- [x] Design it (spec): `/architect business onboarding`
+      Spec [0004](../specs/0004-business-profile-onboarding.md)
+      - [x] Data model migration (Business entity fields + Mongoose schema)
+      - [x] BusinessService and repository
+      - [x] Business controller (GET/PUT /api/business/me, POST /api/business/logo, PUT /api/business/onboarding, draft endpoints)
+      - [x] Onboarding gate middleware
+      - [x] Frontend onboarding wizard (/onboarding route, 4-step flow)
+      - [x] Settings business profile section (/settings route)
+- [ ] Verify it
+- [ ] Test it
 
 ### 7. Customers · needs a decision
 
