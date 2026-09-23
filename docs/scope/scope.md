@@ -119,7 +119,7 @@ Registration flow creates business account, collects business info (name, logo, 
       - [x] Onboarding gate middleware
       - [x] Frontend onboarding wizard (/onboarding route, 4-step flow)
       - [x] Settings business profile section (/settings route)
-- [ ] Verify it
+- [ ] Verify it — PARTIALLY BLOCKED: API-level verification completed against live backend (port 4000); UI-level verification blocked (no frontend auth pages, no API proxy, no token forwarding)
 - [ ] Test it
 
 ### 7. Customers · needs a decision

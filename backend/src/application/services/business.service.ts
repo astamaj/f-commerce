@@ -52,14 +52,16 @@ export class BusinessService {
       logoUrl?: string;
     },
   ): Promise<Business | null> {
-    return this.businessRepository.updateProfile(businessId, {
+    const updated = await this.businessRepository.updateProfile(businessId, {
       name: data.name,
       currency: data.currency,
       address: data.address,
       logoUrl: data.logoUrl,
       onboardingComplete: true,
-      onboardingDraft: {},
     });
+    // Clear the onboarding draft after promoting fields to the live profile
+    await this.businessRepository.clearDraft(businessId);
+    return updated;
   }
 
   async uploadLogo(

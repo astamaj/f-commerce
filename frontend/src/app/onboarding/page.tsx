@@ -65,7 +65,7 @@ export default function OnboardingPage() {
       .then(async (res) => {
         if (res.status === 403 && res.headers.get('content-type')?.includes('json')) {
           return res.json().then((data) => {
-            if (data.message?.includes('Onboarding')) {
+            if (data.error?.includes('Onboarding') || data.message?.includes('Onboarding')) {
               return null;
             }
             throw new Error('Access denied');

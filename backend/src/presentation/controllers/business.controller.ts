@@ -9,6 +9,7 @@ import {
   BusinessProfileUpdateSchema,
 } from '@f-commerce/contracts';
 import { NotFoundError } from '../../domain/errors.js';
+import { BusinessModel } from '../../infrastructure/database/mongoose/models/Business.js';
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -22,6 +23,38 @@ const cloudinaryService = new CloudinaryService();
 const businessService = new BusinessService(businessRepository, cloudinaryService);
 
 businessRouter.use(requireAuth);
+
+// Onboarding gate: block access for incomplete businesses, except onboarding routes
+businessRouter.use((req, res, next) => {
+  // Exempt onboarding completion and draft endpoints
+  if (req.path === '/onboarding' || req.path.startsWith('/onboarding/')) {
+    next();
+    return;
+  }
+
+  const membership = (req.user as { memberships: { businessId: string }[] }).memberships[0];
+  if (!membership) {
+    res.status(400).json({ error: 'No business context', message: 'Missing business context' });
+    return;
+  }
+
+  BusinessModel.findById(membership.businessId)
+    .select('onboardingComplete')
+    .lean()
+    .then((business) => {
+      if (!business || !business.onboardingComplete) {
+        res.status(403).json({
+          error: 'Onboarding required',
+          message: 'Please complete your business profile before accessing this resource',
+        });
+        return;
+      }
+      next();
+    })
+    .catch(() => {
+      next();
+    });
+});
 
 businessRouter.get('/me', requireBusinessRole(['OWNER', 'STAFF']), async (req: Request, res: Response) => {
   try {
