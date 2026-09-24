@@ -20,6 +20,11 @@ export const BusinessProfileSchema = z.object({
 
 export const BusinessProfileUpdateSchema = BusinessProfileSchema.omit({ onboardingComplete: true });
 
+export const DraftSaveSchema = z.object({
+  field: z.enum(['name', 'currency', 'address', 'logoUrl']),
+  value: z.unknown(),
+});
+
 export const BusinessResponseSchema = z.object({
   success: z.boolean(),
   data: z.object({
@@ -36,4 +41,5 @@ export type Currency = z.infer<typeof CurrencyEnum>;
 export type Address = z.infer<typeof AddressSchema>;
 export type BusinessProfile = z.infer<typeof BusinessProfileSchema>;
 export type BusinessProfileUpdate = z.infer<typeof BusinessProfileUpdateSchema>;
+export type DraftSaveRequest = z.infer<typeof DraftSaveSchema>;
 export type BusinessResponse = z.infer<typeof BusinessResponseSchema>;

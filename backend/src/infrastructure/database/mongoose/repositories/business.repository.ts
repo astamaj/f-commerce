@@ -73,15 +73,8 @@ export class MongooseBusinessRepository implements IBusinessRepository {
 
   async saveDraft(businessId: string, field: string, value: unknown): Promise<void> {
     const update: Record<string, unknown> = {};
-    if (field === 'logoUrl') {
-      update['onboardingDraft.logoUrl'] = value;
-    } else {
-      update[`onboardingDraft.${field}`] = value;
-    }
-    await BusinessModel.updateOne(
-      { _id: businessId },
-      { $set: update },
-    );
+    update[`onboardingDraft.${field}`] = value;
+    await BusinessModel.updateOne({ _id: businessId }, { $set: update });
   }
 
   async clearDraft(businessId: string): Promise<void> {

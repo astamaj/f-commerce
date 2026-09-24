@@ -7,9 +7,11 @@ import { CloudinaryService } from '../../infrastructure/services/cloudinary.serv
 import {
   BusinessProfileSchema,
   BusinessProfileUpdateSchema,
+  DraftSaveSchema,
 } from '@f-commerce/contracts';
 import { NotFoundError } from '../../domain/errors.js';
 import { BusinessModel } from '../../infrastructure/database/mongoose/models/Business.js';
+import { runWithContext } from '../../infrastructure/database/mongoose/context.js';
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -26,34 +28,40 @@ businessRouter.use(requireAuth);
 
 // Onboarding gate: block access for incomplete businesses, except onboarding routes
 businessRouter.use((req, res, next) => {
-  // Exempt onboarding completion and draft endpoints
-  if (req.path === '/onboarding' || req.path.startsWith('/onboarding/')) {
+  // Exempt onboarding completion, draft, and logo upload endpoints
+  if (req.path === '/onboarding' || req.path.startsWith('/onboarding/') || req.path === '/logo') {
     next();
     return;
   }
 
-  const membership = (req.user as { memberships: { businessId: string }[] }).memberships[0];
+  const memberships = (req.user as { memberships?: { businessId: string }[] })?.memberships;
+  const membership = memberships?.[0];
   if (!membership) {
     res.status(400).json({ error: 'No business context', message: 'Missing business context' });
     return;
   }
 
-  BusinessModel.findById(membership.businessId)
-    .select('onboardingComplete')
-    .lean()
-    .then((business) => {
-      if (!business || !business.onboardingComplete) {
-        res.status(403).json({
-          error: 'Onboarding required',
-          message: 'Please complete your business profile before accessing this resource',
-        });
-        return;
+  // Run the DB lookup inside the tenant context so the query is isolated
+  runWithContext(
+    { userId: (req.user as { userId: string }).userId, businessId: membership.businessId },
+    async () => {
+      try {
+        const business = await BusinessModel.findById(membership.businessId)
+          .select('onboardingComplete')
+          .lean();
+        if (!business || !business.onboardingComplete) {
+          res.status(403).json({
+            error: 'Onboarding required',
+            message: 'Please complete your business profile before accessing this resource',
+          });
+          return;
+        }
+        next();
+      } catch {
+        res.status(500).json({ error: 'Internal server error', message: 'Failed to verify onboarding status' });
       }
-      next();
-    })
-    .catch(() => {
-      next();
-    });
+    },
+  );
 });
 
 businessRouter.get('/me', requireBusinessRole(['OWNER', 'STAFF']), async (req: Request, res: Response) => {
@@ -213,12 +221,13 @@ businessRouter.put('/onboarding', requireBusinessRole(['OWNER']), async (req: Re
 
 businessRouter.put('/onboarding/draft', requireBusinessRole(['OWNER']), async (req: Request, res: Response) => {
   try {
-    const { field, value } = req.body;
-    if (!field || typeof field !== 'string') {
-      res.status(400).json({ error: 'Invalid input', message: 'Field name is required' });
+    const parsed = DraftSaveSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid input', details: parsed.error.format() });
       return;
     }
 
+    const { field, value } = parsed.data;
     const businessId = (req.user as { memberships: { businessId: string }[] }).memberships[0]?.businessId;
     if (!businessId) {
       res.status(400).json({ error: 'No business context', message: 'Missing business context' });
