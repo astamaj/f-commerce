@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Field, FormMessage, Input, Select } from '@/components/ui/primitives';
+import { apiFetch } from '@/lib/auth-client';
 import type { BusinessProfile } from '@f-commerce/contracts';
 
 type Step = 1 | 2 | 3 | 4;
@@ -58,9 +59,8 @@ export default function OnboardingPage() {
     let cancelled = false;
     void cancelled;
 
-    fetch('/api/business/me', {
+    apiFetch('/api/business/me', {
       method: 'GET',
-      credentials: 'include',
     })
       .then(async (res) => {
         if (res.status === 403 && res.headers.get('content-type')?.includes('json')) {
@@ -74,7 +74,7 @@ export default function OnboardingPage() {
         if (!res.ok) throw new Error('Failed to load business');
         return res.json();
       })
-      .then((data) => {
+      .then(async (data) => {
         if (!cancelled && data) {
           setBusiness(data.data);
           if (data.data.onboardingComplete) {
@@ -84,12 +84,25 @@ export default function OnboardingPage() {
             const draft = data.data.onboardingDraft;
             setForm({
               name: draft.name || data.data.name || '',
-              currency: (draft.currency || data.data.currency || 'BDT') as BusinessProfile['currency'],
+              currency: (draft.currency ||
+                data.data.currency ||
+                'BDT') as BusinessProfile['currency'],
               address: draft.address || data.data.address || form.address,
               logoUrl: draft.logoUrl || data.data.logoUrl || '',
             });
             if (draft.logoUrl || data.data.logoUrl) {
               setLogoPreview(draft.logoUrl || data.data.logoUrl || null);
+            }
+          }
+        } else if (!cancelled && !data) {
+          // 403 Onboarding required — fetch business name from auth profile
+          // to pre-fill step 1 (it was provided at registration)
+          const authRes = await apiFetch('/api/auth/me', { method: 'GET' });
+          if (authRes.ok) {
+            const authData = await authRes.json();
+            const biz = authData.businesses?.[0]?.businessId;
+            if (biz?.name) {
+              setForm((prev) => ({ ...prev, name: biz.name }));
             }
           }
         }
@@ -129,9 +142,8 @@ export default function OnboardingPage() {
       const formData = new FormData();
       formData.append('image', file);
 
-      const res = await fetch('/api/business/logo', {
+      const res = await apiFetch('/api/business/logo', {
         method: 'POST',
-        credentials: 'include',
         body: formData,
       });
 
@@ -154,9 +166,8 @@ export default function OnboardingPage() {
     setError(null);
 
     try {
-      const res = await fetch('/api/business/onboarding', {
+      const res = await apiFetch('/api/business/onboarding', {
         method: 'PUT',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.name,
@@ -194,11 +205,14 @@ export default function OnboardingPage() {
 
         {error && <FormMessage id="onboarding-error">{error}</FormMessage>}
 
-        {step === 1 && (
-          <StepOne form={form} setForm={setForm} onNext={() => setStep(2)} />
-        )}
+        {step === 1 && <StepOne form={form} setForm={setForm} onNext={() => setStep(2)} />}
         {step === 2 && (
-          <StepTwo form={form} setForm={setForm} onNext={() => setStep(3)} onBack={() => setStep(1)} />
+          <StepTwo
+            form={form}
+            setForm={setForm}
+            onNext={() => setStep(3)}
+            onBack={() => setStep(1)}
+          />
         )}
         {step === 3 && (
           <StepThree
@@ -212,7 +226,12 @@ export default function OnboardingPage() {
           />
         )}
         {step === 4 && (
-          <StepFour form={form} onBack={() => setStep(3)} onSubmit={completeOnboarding} submitting={submitting} />
+          <StepFour
+            form={form}
+            onBack={() => setStep(3)}
+            onSubmit={completeOnboarding}
+            submitting={submitting}
+          />
         )}
       </div>
     </div>
@@ -233,7 +252,9 @@ function StepIndicator({ step }: { step: Step }) {
             >
               {s}
             </div>
-            {s < 4 && <div className={`ml-2 h-1 w-8 ${s < step ? 'bg-sky' : 'bg-surface-muted'}`} />}
+            {s < 4 && (
+              <div className={`ml-2 h-1 w-8 ${s < step ? 'bg-sky' : 'bg-surface-muted'}`} />
+            )}
           </div>
         ))}
       </div>
@@ -301,7 +322,9 @@ function StepTwo({
           id="street"
           type="text"
           value={form.address.street}
-          onChange={(e) => setForm({ ...form, address: { ...form.address, street: e.target.value } })}
+          onChange={(e) =>
+            setForm({ ...form, address: { ...form.address, street: e.target.value } })
+          }
           placeholder="123 Main Street"
         />
       </Field>
@@ -321,7 +344,9 @@ function StepTwo({
           id="region"
           type="text"
           value={form.address.region || ''}
-          onChange={(e) => setForm({ ...form, address: { ...form.address, region: e.target.value } })}
+          onChange={(e) =>
+            setForm({ ...form, address: { ...form.address, region: e.target.value } })
+          }
           placeholder="Dhaka Division"
         />
       </Field>
@@ -331,7 +356,9 @@ function StepTwo({
           id="postal-code"
           type="text"
           value={form.address.postalCode || ''}
-          onChange={(e) => setForm({ ...form, address: { ...form.address, postalCode: e.target.value } })}
+          onChange={(e) =>
+            setForm({ ...form, address: { ...form.address, postalCode: e.target.value } })
+          }
           placeholder="1000"
         />
       </Field>
@@ -341,7 +368,9 @@ function StepTwo({
           id="country"
           type="text"
           value={form.address.country}
-          onChange={(e) => setForm({ ...form, address: { ...form.address, country: e.target.value } })}
+          onChange={(e) =>
+            setForm({ ...form, address: { ...form.address, country: e.target.value } })
+          }
         />
       </Field>
 
@@ -385,7 +414,9 @@ function StepThree({
         <Select
           id="currency"
           value={form.currency}
-          onChange={(e) => setForm({ ...form, currency: e.target.value as BusinessProfile['currency'] })}
+          onChange={(e) =>
+            setForm({ ...form, currency: e.target.value as BusinessProfile['currency'] })
+          }
         >
           <option value="BDT">BDT - Bangladeshi Taka</option>
           <option value="USD">USD - US Dollar</option>
@@ -400,7 +431,11 @@ function StepThree({
           htmlFor="logo-upload"
         >
           {logoPreview ? (
-            <img alt="Logo preview" className="h-20 w-20 rounded object-contain" src={logoPreview} />
+            <img
+              alt="Logo preview"
+              className="h-20 w-20 rounded object-contain"
+              src={logoPreview}
+            />
           ) : (
             <span className="text-sm text-muted">
               {logoUploading ? 'Uploading...' : 'Click to upload a logo'}
