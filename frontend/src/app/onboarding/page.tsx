@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Field, FormMessage, Input, Select } from '@/components/ui/primitives';
 import { apiFetch } from '@/lib/auth-client';
+import { useRequireAuth } from '@/lib/auth-guard';
 import type { BusinessProfile } from '@f-commerce/contracts';
 
 type Step = 1 | 2 | 3 | 4;
@@ -34,6 +35,11 @@ type BusinessData = {
 
 export default function OnboardingPage() {
   const router = useRouter();
+
+  // Gate the whole flow behind authentication before any API call.
+  // All hooks below are called unconditionally so hook order is stable
+  // across the ready/not-ready renders.
+  const ready = useRequireAuth();
   const [step, setStep] = useState<Step>(1);
   const [submitting, setSubmitting] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -120,6 +126,8 @@ export default function OnboardingPage() {
       cancelled = true;
     };
   }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!ready) return <div className="p-8">Loading your profile...</div>;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Button, Field, FormMessage, Input, Select } from '@/components/ui/primitives';
+import { apiFetch } from '@/lib/auth-client';
+import { useRequireAuth } from '@/lib/auth-guard';
 import type { BusinessProfile } from '@f-commerce/contracts';
 
 type Address = {
@@ -21,6 +23,9 @@ type BusinessData = {
 };
 
 export default function SettingsPage() {
+  // Gate behind authentication. All hooks below are called unconditionally
+  // so hook order is stable across the ready/not-ready renders.
+  const ready = useRequireAuth();
   const [business, setBusiness] = useState<BusinessData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -43,7 +48,7 @@ export default function SettingsPage() {
     let cancelled = false;
     void cancelled;
 
-    fetch('/api/business/me', { credentials: 'include' })
+    apiFetch('/api/business/me')
       .then(async (res) => {
         if (!res.ok) {
           const data = await res.json();
@@ -88,15 +93,16 @@ export default function SettingsPage() {
     };
   }, []);
 
+  if (!ready) return <div className="p-8">Loading...</div>;
+
   const saveProfile = async () => {
     setIsSaving(true);
     setError(null);
     setSuccess(null);
 
     try {
-      const res = await fetch('/api/business/me', {
+      const res = await apiFetch('/api/business/me', {
         method: 'PUT',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
@@ -139,7 +145,11 @@ export default function SettingsPage() {
       )}
 
       {error && <FormMessage id="settings-error">{error}</FormMessage>}
-      {success && <p className="text-sm text-success" role="status">{success}</p>}
+      {success && (
+        <p className="text-sm text-success" role="status">
+          {success}
+        </p>
+      )}
 
       <div className="space-y-6">
         <Field label="Business name" htmlFor="business-name">
@@ -156,7 +166,9 @@ export default function SettingsPage() {
           <Select
             id="currency"
             value={form.currency}
-            onChange={(e) => setForm({ ...form, currency: e.target.value as BusinessProfile['currency'] })}
+            onChange={(e) =>
+              setForm({ ...form, currency: e.target.value as BusinessProfile['currency'] })
+            }
           >
             <option value="BDT">BDT - Bangladeshi Taka</option>
             <option value="USD">USD - US Dollar</option>
@@ -170,7 +182,9 @@ export default function SettingsPage() {
             id="street"
             type="text"
             value={form.address.street}
-            onChange={(e) => setForm({ ...form, address: { ...form.address, street: e.target.value } })}
+            onChange={(e) =>
+              setForm({ ...form, address: { ...form.address, street: e.target.value } })
+            }
             placeholder="123 Main Street"
           />
         </Field>
@@ -180,7 +194,9 @@ export default function SettingsPage() {
             id="city"
             type="text"
             value={form.address.city}
-            onChange={(e) => setForm({ ...form, address: { ...form.address, city: e.target.value } })}
+            onChange={(e) =>
+              setForm({ ...form, address: { ...form.address, city: e.target.value } })
+            }
             placeholder="Dhaka"
           />
         </Field>
@@ -190,7 +206,9 @@ export default function SettingsPage() {
             id="region"
             type="text"
             value={form.address.region || ''}
-            onChange={(e) => setForm({ ...form, address: { ...form.address, region: e.target.value } })}
+            onChange={(e) =>
+              setForm({ ...form, address: { ...form.address, region: e.target.value } })
+            }
             placeholder="Dhaka Division"
           />
         </Field>
@@ -200,7 +218,9 @@ export default function SettingsPage() {
             id="postal-code"
             type="text"
             value={form.address.postalCode || ''}
-            onChange={(e) => setForm({ ...form, address: { ...form.address, postalCode: e.target.value } })}
+            onChange={(e) =>
+              setForm({ ...form, address: { ...form.address, postalCode: e.target.value } })
+            }
             placeholder="1000"
           />
         </Field>
@@ -210,7 +230,9 @@ export default function SettingsPage() {
             id="country"
             type="text"
             value={form.address.country}
-            onChange={(e) => setForm({ ...form, address: { ...form.address, country: e.target.value } })}
+            onChange={(e) =>
+              setForm({ ...form, address: { ...form.address, country: e.target.value } })
+            }
           />
         </Field>
 

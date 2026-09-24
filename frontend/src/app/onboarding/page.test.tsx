@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ThemeBoundary } from '@/components/theme/theme';
+import { setAuth } from '@/lib/auth-client';
 
 const replaceMock = vi.fn();
 // a stable router object, so the page's [router]-dependent effect does not re-run on every render
@@ -44,6 +45,9 @@ describe('OnboardingPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.localStorage.clear();
+    // OnboardingPage now guards on auth before fetching; seed a session so
+    // the wizard-based tests render past the guard.
+    setAuth({ accessToken: 'tok', businessId: 'biz-1' });
     setupObjectUrl();
   });
 
@@ -90,7 +94,9 @@ describe('OnboardingPage', () => {
       </ThemeBoundary>,
     );
 
-    expect(await screen.findByRole('heading', { name: /tell us about your business/i })).toBeVisible();
+    expect(
+      await screen.findByRole('heading', { name: /tell us about your business/i }),
+    ).toBeVisible();
     expect(screen.getByText('Step 1 of 4')).toBeVisible();
     expect(screen.getByRole('button', { name: /continue/i })).toBeDisabled();
   });
@@ -252,7 +258,9 @@ describe('OnboardingPage', () => {
 
     // a successful upload POSTs to the logo endpoint and shows the preview img
     await waitFor(() => {
-      expect(fetchMock.mock.calls.some((c) => c[0] === 'http://localhost:4000/api/business/logo')).toBe(true);
+      expect(
+        fetchMock.mock.calls.some((c) => c[0] === 'http://localhost:4000/api/business/logo'),
+      ).toBe(true);
     });
     expect(screen.getByRole('img', { name: /logo preview/i })).toBeVisible();
   });
@@ -261,7 +269,9 @@ describe('OnboardingPage', () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse(200, { success: true, data: incompleteBusiness }))
-      .mockResolvedValueOnce(jsonResponse(200, { success: true, data: { onboardingComplete: true } }));
+      .mockResolvedValueOnce(
+        jsonResponse(200, { success: true, data: { onboardingComplete: true } }),
+      );
     vi.stubGlobal('fetch', fetchMock);
     const user = userEvent.setup();
 
