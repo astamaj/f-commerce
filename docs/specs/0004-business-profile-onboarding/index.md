@@ -112,21 +112,21 @@ Onboarding is not a lifecycle state machine, but the Business document moves thr
 
 **API surface**:
 
-| Endpoint | Method | Key inputs | Key outputs | Auth | Key errors |
-| --- | --- | --- | --- | --- | --- |
-| `/api/business/me` | GET | none | name, currency, logoUrl, address, onboardingComplete | bearer | 401, 404 |
-| `/api/business/me` | PUT | name, currency, logoUrl, address | updated Business fields | bearer (OWNER only) | 401, 403, 400, 404 |
-| `/api/business/logo` | POST | image (multipart form data) | logoUrl | bearer (OWNER only) | 401, 403, 400, 502 |
+| Endpoint             | Method | Key inputs                       | Key outputs                                          | Auth                | Key errors         |
+| -------------------- | ------ | -------------------------------- | ---------------------------------------------------- | ------------------- | ------------------ |
+| `/api/business/me`   | GET    | none                             | name, currency, logoUrl, address, onboardingComplete | bearer              | 401, 404           |
+| `/api/business/me`   | PUT    | name, currency, logoUrl, address | updated Business fields                              | bearer (OWNER only) | 401, 403, 400, 404 |
+| `/api/business/logo` | POST   | image (multipart form data)      | logoUrl                                              | bearer (OWNER only) | 401, 403, 400, 502 |
 
 **Value sourcing**:
 
-| Action | Value produced / displayed | Source |
-| --- | --- | --- |
-| `register` | Business with `name`, `onboardingComplete=false` | Backend generated; name from registration input |
-| `GET /api/business/me` | `currency`, `logoUrl`, `address`, `onboardingComplete` | Business document DB columns (currency/address optional until onboarding) |
-| `PUT /api/business/me` | Updated fields + `onboardingComplete=true` | PUT request body validated by shared Zod schema |
-| `POST /api/business/logo` | `logoUrl` (Cloudinary secure URL) | Cloudinary upload API response `secure_url` field |
-| `middleware gate` | Redirect to `/onboarding` | `onboardingComplete` field from Business document (spec 0003 AsyncLocalStorage context) |
+| Action                    | Value produced / displayed                             | Source                                                                                  |
+| ------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `register`                | Business with `name`, `onboardingComplete=false`       | Backend generated; name from registration input                                         |
+| `GET /api/business/me`    | `currency`, `logoUrl`, `address`, `onboardingComplete` | Business document DB columns (currency/address optional until onboarding)               |
+| `PUT /api/business/me`    | Updated fields + `onboardingComplete=true`             | PUT request body validated by shared Zod schema                                         |
+| `POST /api/business/logo` | `logoUrl` (Cloudinary secure URL)                      | Cloudinary upload API response `secure_url` field                                       |
+| `middleware gate`         | Redirect to `/onboarding`                              | `onboardingComplete` field from Business document (spec 0003 AsyncLocalStorage context) |
 
 **Key invariants**:
 

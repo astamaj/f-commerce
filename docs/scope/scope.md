@@ -10,26 +10,26 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 
 ## At a glance
 
-| #   | Feature                           | Phase      | Status      |
-| --- | --------------------------------- | ---------- | ----------- |
-| 1   | Stack & architecture              | Foundation | done        |
-| 2   | Data model                        | Foundation | done        |
-| 3   | Coding standards & tooling        | Foundation | done        |
-| 4   | Design system & UI foundation     | Foundation | done        |
-| 5   | Authentication & tenant isolation | Slice 1    | done        |
-| 6   | Business profile & onboarding     | Slice 1    | planned     |
-| 7   | Customers                         | Slice 1    | planned     |
-| 8   | Products & categories             | Slice 2    | planned     |
-| 9   | Orders (CRUD + status workflow)   | Slice 2    | planned     |
-| 10  | Payments                          | Slice 2    | planned     |
-| 11  | Inventory management              | Slice 3    | planned     |
-| 12  | Delivery & shipping               | Slice 3    | planned     |
-| 13  | Expenses & profit calculation     | Slice 3    | planned     |
-| 14  | Dashboard                         | Slice 3    | planned     |
-| 15  | Reports                           | Slice 4    | planned     |
-| 16  | Search & filters                  | Slice 4    | planned     |
-| 17  | Notifications                     | Slice 4    | planned     |
-| 18  | Invoice generation                | Slice 4    | planned     |
+| #   | Feature                           | Phase      | Status  |
+| --- | --------------------------------- | ---------- | ------- |
+| 1   | Stack & architecture              | Foundation | done    |
+| 2   | Data model                        | Foundation | done    |
+| 3   | Coding standards & tooling        | Foundation | done    |
+| 4   | Design system & UI foundation     | Foundation | done    |
+| 5   | Authentication & tenant isolation | Slice 1    | done    |
+| 6   | Business profile & onboarding     | Slice 1    | planned |
+| 7   | Customers                         | Slice 1    | planned |
+| 8   | Products & categories             | Slice 2    | planned |
+| 9   | Orders (CRUD + status workflow)   | Slice 2    | planned |
+| 10  | Payments                          | Slice 2    | planned |
+| 11  | Inventory management              | Slice 3    | planned |
+| 12  | Delivery & shipping               | Slice 3    | planned |
+| 13  | Expenses & profit calculation     | Slice 3    | planned |
+| 14  | Dashboard                         | Slice 3    | planned |
+| 15  | Reports                           | Slice 4    | planned |
+| 16  | Search & filters                  | Slice 4    | planned |
+| 17  | Notifications                     | Slice 4    | planned |
+| 18  | Invoice generation                | Slice 4    | planned |
 
 ## Foundations
 
@@ -106,21 +106,17 @@ User auth, JWT tokens, role management (owner/staff), strict multi-tenant data r
       Review [2026-09-20-feat-auth-tenant-isolation](../reviews/2026-09-20-feat-auth-tenant-isolation.md)
 - [x] Document it: `/document authentication & tenant isolation`
 
-### 6. Business profile & onboarding · in-progress (building)
+### 6. Business profile & onboarding · in-progress (verified)
 
 Registration flow creates business account, collects business info (name, logo, currency, address).
 **Done when:** new user can complete onboarding and see their business data isolated from others.
 
 - [x] Design it (spec): `/architect business onboarding`
-      Spec [0004](../specs/0004-business-profile-onboarding.md)
-      - [x] Data model migration (Business entity fields + Mongoose schema)
-      - [x] BusinessService and repository
-      - [x] Business controller (GET/PUT /api/business/me, POST /api/business/logo, PUT /api/business/onboarding, draft endpoints)
-      - [x] Onboarding gate middleware
-      - [x] Frontend onboarding wizard (/onboarding route, 4-step flow)
-      - [x] Settings business profile section (/settings route)
-- [ ] Verify it — PARTIALLY BLOCKED: API-level verification completed against live backend (port 4000); UI-level verification blocked (no frontend auth pages, no API proxy, no token forwarding)
-- [ ] Test it
+      Spec [0004](../specs/0004-business-profile-onboarding.md) - [x] Data model migration (Business entity fields + Mongoose schema) - [x] BusinessService and repository - [x] Business controller (GET/PUT /api/business/me, POST /api/business/logo, PUT /api/business/onboarding, draft endpoints) - [x] Onboarding gate middleware - [x] Frontend onboarding wizard (/onboarding route, 4-step flow) - [x] Settings business profile section (/settings route)
+- [x] Verify it — runtime verified: backend + frontend dev servers started; all API endpoints exercised via curl and through frontend proxy (:3000); full e2e flow (register → 403 gate → draft save → complete onboarding → 200 access); draft cleared from DB after completion; STAFF permissions verified (OWNER write 200, STAFF write 403); Cloudinary pipeline verified (400 file type, 200 with secure_url); frontend pages render HTTP 200 with expected content in JS bundles; Zod validation confirmed (400 on invalid input); tenant isolation gate confirmed (403 for incomplete, 200 for complete); DraftSaveSchema field whitelist verified (isAdmin/$where rejected); onboardingComplete field stripping verified
+- [x] Test it: `/test business onboarding` — 49 backend tests + 39 frontend unit tests (auth-client, login, onboarding wizard, settings, dashboard) plus a Playwright e2e flow, traced to spec 0004 AC-1/3/4/5
+- [x] Review it (fresh model): `/check review business onboarding`
+      Findings [2026-09-24-feat-business-backend](https://github.com/review) — 3 blockers, 3 major, 6 minor, 6 nits. Verified by claude-sonnet-4-6. All 3 blockers addressed in commit 9196280: (1) onboarding gate now runs inside `runWithContext` with proper error handling, (2) `DraftSaveSchema` Zod validation added for field whitelist, (3) `onboarding.middleware.ts` deleted.
 
 ### 7. Customers · needs a decision
 

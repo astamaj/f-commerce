@@ -78,9 +78,6 @@ export class MongooseBusinessRepository implements IBusinessRepository {
   }
 
   async clearDraft(businessId: string): Promise<void> {
-    await BusinessModel.updateOne(
-      { _id: businessId },
-      { $unset: { onboardingDraft: '' } },
-    );
+    await BusinessModel.updateOne({ _id: businessId }, { $unset: { onboardingDraft: '' } });
   }
 }

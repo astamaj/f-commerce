@@ -31,18 +31,11 @@ export class BusinessService {
     return this.businessRepository.findById(businessId);
   }
 
-  async updateBusiness(
-    businessId: string,
-    data: BusinessUpdateData,
-  ): Promise<Business | null> {
+  async updateBusiness(businessId: string, data: BusinessUpdateData): Promise<Business | null> {
     return this.businessRepository.updateProfile(businessId, data);
   }
 
-  async saveDraft(
-    businessId: string,
-    field: string,
-    value: unknown,
-  ): Promise<void> {
+  async saveDraft(businessId: string, field: string, value: unknown): Promise<void> {
     await this.businessRepository.saveDraft(businessId, field, value);
   }
 
@@ -70,10 +63,7 @@ export class BusinessService {
     return updated;
   }
 
-  async uploadLogo(
-    _businessId: string,
-    imageBuffer: Buffer,
-  ): Promise<{ logoUrl: string }> {
+  async uploadLogo(_businessId: string, imageBuffer: Buffer): Promise<{ logoUrl: string }> {
     const result = await this.cloudinaryService.uploadImage(imageBuffer);
     return { logoUrl: result.secure_url };
   }
